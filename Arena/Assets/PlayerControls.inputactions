@@ -10,7 +10,7 @@
                     "type": "PassThrough",
                     "id": "5c9afb33-63ae-400c-8bf5-e03368fd234e",
                     "expectedControlType": "Axis",
-                    "processors": "",
+                    "processors": "AxisDeadzone",
                     "interactions": ""
                 },
                 {
@@ -19,14 +19,14 @@
                     "id": "c9da73db-2550-4d40-ad18-3ea0b02b6b1e",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": ""
+                    "interactions": "Hold(duration=0.1)"
                 },
                 {
                     "name": "Vertical",
                     "type": "PassThrough",
                     "id": "85082578-e328-4dfb-9bad-beeec0c1a0a7",
                     "expectedControlType": "Axis",
-                    "processors": "",
+                    "processors": "AxisDeadzone",
                     "interactions": ""
                 }
             ],
