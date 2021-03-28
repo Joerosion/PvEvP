@@ -53,10 +53,11 @@
     <UnityVersion>2021.1.0f1</UnityVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Assets\Scripts\PlayerMovement.cs" />
     <Compile Include="Assets\Scripts\Simple2dPlatformController.cs" />
-    <Compile Include="Assets\PlayerControls.cs" />
     <Compile Include="Assets\Scripts\GlobalVariables.cs" />
+    <Compile Include="Assets\Scripts\PlayerMovement.cs" />
+    <Compile Include="Assets\PlayerControls.cs" />
+    <Compile Include="Assets\Scripts\PlayerAnimationHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">
