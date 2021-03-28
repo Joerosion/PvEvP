@@ -22,6 +22,9 @@ public class Simple2dPlatformController : MonoBehaviour
     private PlayerControls playerControls;
     private PlayerAnimationHandler playerAnimationHandler;
     private bool jumpHeld;
+    private float timeLeftGround;
+    float horizontalMovementInput = 0f;
+    float verticalMovement = 0f;
 
     #region Public Variables, hidden from inspector
     /// <summary>
@@ -29,8 +32,14 @@ public class Simple2dPlatformController : MonoBehaviour
     /// </summary>
     //[HideInInspector]
     public bool isGrounded = false;
+    public bool wallSliding = false;
+
     //[HideInInspector]
     public Vector3 Velocity;
+    #endregion
+
+    #region Animator Variables
+
     #endregion
 
     #region Public Inspector Variables
@@ -48,9 +57,11 @@ public class Simple2dPlatformController : MonoBehaviour
     public bool UseSkidAcceleration = false;
     public float MaximumHorizontalSpeed = 10f;
     public float MaximumVerticalSpeed = 8f;
+    public float MaximumWallSlideSpeed = 3f;
     public float platformDropDownCoolDown = 0.2f;
     public float FallMultiplier = 2.5f;
     public float LowJumpMultipler = 2f;
+    public float jumpGracePeriod = 0.2f;
 
     [Header("Collider Specs")]
     public float ColliderSizeVertical = 0.3f;
@@ -102,16 +113,16 @@ public class Simple2dPlatformController : MonoBehaviour
 
         //Player Input
 
-        float horizontalMovement = 0f;
-        float verticalMovement = 0f;
+        horizontalMovementInput = 0f;
+        verticalMovement = 0f;
 
         if(Mathf.Abs(playerControls.InGame.Horizontal.ReadValue<float>()) > HorizontalDeadZone)
         {
-            horizontalMovement = playerControls.InGame.Horizontal.ReadValue<float>();
+            horizontalMovementInput = playerControls.InGame.Horizontal.ReadValue<float>();
         }
         else
         {
-            horizontalMovement = 0f;
+            horizontalMovementInput = 0f;
         }
 
         if (Mathf.Abs(playerControls.InGame.Vertical.ReadValue<float>()) > VerticalDeadZone)
@@ -126,9 +137,10 @@ public class Simple2dPlatformController : MonoBehaviour
         var canJump = GetCanJump();
 
         //Simple Jump, ignored if you're pressing the DOWN key
-        if (verticalMovement >= 0 && isGrounded && canJump)
+        if (verticalMovement >= 0 && (isGrounded || Time.time < timeLeftGround + jumpGracePeriod) && canJump)
         {
             isGrounded = false;
+            playerAnimationHandler.TriggerJump();
             Velocity.y = JumpStrength;
         }
 
@@ -139,19 +151,19 @@ public class Simple2dPlatformController : MonoBehaviour
         }
 
         //Simple Horizontal Movement (Same in the air as on the ground)
-        if (horizontalMovement != 0)
+        if (horizontalMovementInput != 0)
         {
-            if (Velocity.x == 0 || Mathf.Sign(horizontalMovement) == Mathf.Sign(Velocity.x))
+            if (Velocity.x == 0 || Mathf.Sign(horizontalMovementInput) == Mathf.Sign(Velocity.x))
             {
 
                 //Added a Custom Toggle here for Velocity
                 if (UseAcceleration == true)
                 {
-                    Velocity.x += horizontalMovement * Acceleration * RunSpeed * Time.deltaTime;
+                    Velocity.x += horizontalMovementInput * Acceleration * RunSpeed * Time.deltaTime;
                 }
                 else
                 {
-                    Velocity.x = horizontalMovement * RunSpeed;
+                    Velocity.x = horizontalMovementInput * RunSpeed;
                 }
 
             }
@@ -161,11 +173,11 @@ public class Simple2dPlatformController : MonoBehaviour
                 //Added a Custom Toggle here for Skid Velocity.
                 if (UseSkidAcceleration == true)
                 {
-                    Velocity.x += horizontalMovement * SkidAcceleration * RunSpeed * Time.deltaTime;
+                    Velocity.x += horizontalMovementInput * SkidAcceleration * RunSpeed * Time.deltaTime;
                 }
                 else
                 {
-                    Velocity.x = horizontalMovement * RunSpeed;
+                    Velocity.x = horizontalMovementInput * RunSpeed;
                 }
 
             }
@@ -179,11 +191,14 @@ public class Simple2dPlatformController : MonoBehaviour
 
         //Send horizontal movement to the animation handler.
         //Eventually, we want to expand this functionality to send many inputs to animation handler.
-        playerAnimationHandler.UpdateAnimatorValues(horizontalMovement);
 
         //Clamp to maximum
         Velocity.x = Mathf.Clamp(Velocity.x, -MaximumHorizontalSpeed, MaximumHorizontalSpeed);
         Velocity.y = Mathf.Clamp(Velocity.y, -MaximumVerticalSpeed, MaximumVerticalSpeed);
+        if (wallSliding)
+        {
+            Velocity.y = Mathf.Clamp(Velocity.y, -MaximumWallSlideSpeed, MaximumWallSlideSpeed);
+        }
     }
 
     /// <summary>
@@ -205,7 +220,7 @@ public class Simple2dPlatformController : MonoBehaviour
         {
             wasJumpPressed = false; //Re-enable jumping
         }
-        if (isGrounded && jumpButtonDown && !wasJumpPressed)
+        if ((isGrounded || Time.time < timeLeftGround + jumpGracePeriod) && jumpButtonDown && !wasJumpPressed)
         {
             wasJumpPressed = true; //Disable jumping
             return true; //tell the parent that we've jumped
@@ -237,12 +252,19 @@ public class Simple2dPlatformController : MonoBehaviour
         //Add gravity if we're off the ground
         if (!isGrounded)
         {
-            if(Velocity.y < 0)
+            if(Velocity.y < 0) //Adopted code from the "Better Jumps" philosophy. Right now, we start applying stronger gravity when the player releases the jump button.
             {
-                Velocity += Vector3.up * Gravity * (FallMultiplier) * Time.deltaTime;
-            } else if (Velocity.y > 0 && !InputSystem.GetDevice<Gamepad>().buttonSouth.isPressed) //Right now, we're checking the GamePad directly. This is not flexible. Let's change this at some point.
+                if (wallSliding == false)
+                {
+                    Velocity += Vector3.up * Gravity * (FallMultiplier) * Time.deltaTime;
+                }
+                else
+                {
+                    Velocity.y += Gravity * Time.deltaTime * .3f; // This is using a temporary, hard-coded variable for wallSlide acceleration
+                }
+            }
+            else if (Velocity.y > 0 && !InputSystem.GetDevice<Gamepad>().buttonSouth.isPressed) //Right now, we're checking the GamePad directly. This is not flexible. Let's change this at some point.
             {
-                Debug.Log("We are in the air AND jump isn't being pressed");
                 Velocity += Vector3.up * Gravity * (LowJumpMultipler) * Time.deltaTime;
             }
             else
@@ -251,8 +273,6 @@ public class Simple2dPlatformController : MonoBehaviour
             }
         }
 
-        Debug.Log(InputSystem.GetDevice<Gamepad>().buttonSouth.isPressed);
-
         //Move the player
         this.transform.position += Velocity * Time.fixedDeltaTime;
 
@@ -260,6 +280,7 @@ public class Simple2dPlatformController : MonoBehaviour
         UpTest();
         DownTest(!platformDropDown); //Down tests, pass in whether or not we want to do the platform drop-down tests or not
         WallTest();
+        playerAnimationHandler.UpdateAnimatorValues(horizontalMovementInput, Velocity.y, wallSliding, isGrounded);
     }
 
     /// <summary>
@@ -312,9 +333,15 @@ public class Simple2dPlatformController : MonoBehaviour
             this.transform.position = new Vector3(this.transform.position.x, lastHitResult.point.y + ColliderSizeVertical, this.transform.position.z);
             Velocity.y = 0;
             isGrounded = true;
+            wallSliding = false;
         }
         else //otherwise we're not grounded
         {
+            if(isGrounded == true)
+            {
+                timeLeftGround = Time.time;
+            }
+
             isGrounded = false;
         }
     }
@@ -323,15 +350,35 @@ public class Simple2dPlatformController : MonoBehaviour
     /// </summary>
     void WallTest()
     {
-        if (Velocity.x < 0 && RaycastHorizontal(-this.transform.right, Walls)) //Only test Left if we're moving Left
+        if (Velocity.x < 0 && RaycastHorizontal(-this.transform.right, Walls)) //Only test Left if we're moving or holding Left
         {
             this.transform.position = new Vector3(lastHitResult.point.x + ColliderSizeHorizontal, this.transform.position.y, this.transform.position.z);
             Velocity.x = 0;
+
+            if (horizontalMovementInput < 0 && isGrounded == false && Velocity.y < 0)
+            {
+                if (wallSliding == false)
+                {
+                    Velocity.y = 0f;
+                }
+
+                Debug.Log("We're wall sliding!");
+                wallSliding = true;
+            }
         }
-        if (Velocity.x > 0 && RaycastHorizontal(this.transform.right, Walls)) //Only test Right if we're moving Right
+        else if (Velocity.x > 0 && RaycastHorizontal(this.transform.right, Walls)) //Only test Right if we're moving or holding Right
         {
             this.transform.position = new Vector3(lastHitResult.point.x - ColliderSizeHorizontal, this.transform.position.y, this.transform.position.z);
             Velocity.x = 0;
+            if (horizontalMovementInput > 0 && isGrounded == false && Velocity.y < 0)
+            {
+                //Velocity.y = 0f;
+                wallSliding = true;
+            }
+        }
+        else
+        {
+            wallSliding = false;
         }
 
     }

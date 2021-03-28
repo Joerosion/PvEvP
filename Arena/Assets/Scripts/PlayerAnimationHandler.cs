@@ -38,12 +38,20 @@ public class PlayerAnimationHandler : MonoBehaviour
 
     }
 
-    public void UpdateAnimatorValues(float velX)
+    public void TriggerJump()
     {
-        animator.SetFloat("Horizontal", Mathf.Abs(velX));
+        animator.SetTrigger("jumpTriggered");
+    }
+
+    public void UpdateAnimatorValues(float inputX, float velY, bool isWallSliding, bool isGrounded)
+    {
+        animator.SetFloat("Horizontal", Mathf.Abs(inputX));
+        animator.SetFloat("Vertical", velY);
+        animator.SetBool("wallSliding", isWallSliding);
+        animator.SetBool("isGrounded", isGrounded);
 
         //determine direction and flip sprite
-        if (velX > 0)
+        if (inputX > 0)
         {
             spriteRenderer.flipX = false;
             if(playerController.ColliderOffsetHorizontal > 0)
@@ -52,7 +60,7 @@ public class PlayerAnimationHandler : MonoBehaviour
             }
         }
         
-        if (velX < 0)
+        if (inputX < 0)
         {
             spriteRenderer.flipX = true;
             if (playerController.ColliderOffsetHorizontal < 0)
@@ -60,5 +68,6 @@ public class PlayerAnimationHandler : MonoBehaviour
                 playerController.ColliderOffsetHorizontal *= -1f;
             }
         }
+
     }
 }
