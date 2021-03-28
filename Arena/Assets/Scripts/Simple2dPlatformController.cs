@@ -46,17 +46,24 @@ public class Simple2dPlatformController : MonoBehaviour
     public float Deceleration = 10f;
     public float SkidAcceleration = 20f;
     public bool UseSkidAcceleration = false;
-    public float ColliderSize = 0.15f;
     public float MaximumHorizontalSpeed = 10f;
     public float MaximumVerticalSpeed = 8f;
     public float platformDropDownCoolDown = 0.2f;
     public float FallMultiplier = 2.5f;
     public float LowJumpMultipler = 2f;
 
+    [Header("Collider Specs")]
+    public float ColliderSizeVertical = 0.3f;
+    public float ColliderSizeHorizontal = 0.15f;
+    public float ColliderOffsetVertical = 0.0f;
+    public float ColliderOffsetHorizontal = 0.0f;
+    [Space(10)]
+
     /// <summary>
     /// At minimum you want 2 layers. One for your player and one for your geometry.
     /// To get the most out of this you want 4 layers. One for Walls, One for Roofs, One for Platforms and one for the player.
     /// </summary>
+    [Header("Layer Assignments")]
     public LayerMask Walls;
     public LayerMask Roofs;
     public LayerMask Platforms;
@@ -67,7 +74,8 @@ public class Simple2dPlatformController : MonoBehaviour
     /// </summary>
     void OnDrawGizmos()
     {
-        Gizmos.DrawWireCube(GetComponent<SpriteRenderer>().bounds.center, new Vector3(GetComponent<SpriteRenderer>().bounds.extents.x * 2, GetComponent<SpriteRenderer>().bounds.extents.y * 2, 0f));
+        Gizmos.DrawWireCube(new Vector3(this.transform.position.x + ColliderOffsetHorizontal, this.transform.position.y + ColliderOffsetVertical, 0f),
+                            new Vector3(ColliderSizeHorizontal * 2, ColliderSizeVertical * 2, 0f));
     }
 
     private void Awake()
@@ -264,12 +272,21 @@ public class Simple2dPlatformController : MonoBehaviour
     /// <param name="Direction"></param>
     /// <param name="mask"></param>
     /// <returns>True on hit, False on not hit</returns>
-    bool Raycast(Vector2 Direction, LayerMask mask)
+    bool RaycastVertical(Vector2 Direction, LayerMask mask)
     {
-        lastHitResult = Physics2D.Raycast(this.transform.position, Direction, ColliderSize, mask);
+        lastHitResult = Physics2D.Raycast(new Vector2(this.transform.position.x, this.transform.position.y + ColliderOffsetVertical), 
+                                                                                                Direction, ColliderSizeVertical, mask);
         if (lastHitResult != null && lastHitResult.collider != null) return true;
         return false;
+    }
 
+
+    bool RaycastHorizontal(Vector2 Direction, LayerMask mask)
+    {
+        lastHitResult = Physics2D.Raycast(new Vector2(this.transform.position.x + ColliderOffsetHorizontal, this.transform.position.y),
+                                                                                              Direction, ColliderSizeHorizontal, mask);
+        if (lastHitResult != null && lastHitResult.collider != null) return true;
+        return false;
     }
     /// <summary>
     /// Test to see if we hit the ceiling
@@ -277,9 +294,9 @@ public class Simple2dPlatformController : MonoBehaviour
     void UpTest()
     {
         if (Velocity.y < 0) return; //Don't bother unless we're moving upwards
-        if (Raycast(this.transform.up, Roofs))
+        if (RaycastVertical(this.transform.up, Roofs))
         {
-            this.transform.position = new Vector3(this.transform.position.x, lastHitResult.point.y - ColliderSize, this.transform.position.z);
+            this.transform.position = new Vector3(this.transform.position.x, lastHitResult.point.y - ColliderSizeVertical, this.transform.position.z);
             Velocity.y = 0;
         }
     }
@@ -290,13 +307,13 @@ public class Simple2dPlatformController : MonoBehaviour
     void DownTest(bool TestAllColliders = true)
     {
         //Only test if we're moving downwards, or not moving vertically at all
-        if ((Velocity.y <= 0) && Raycast(-this.transform.up, TestAllColliders ? (Platforms | Walls | Roofs) : (Walls | Roofs)))
+        if ((Velocity.y <= 0) && RaycastVertical(-this.transform.up, TestAllColliders ? (Platforms | Walls | Roofs) : (Walls | Roofs)))
         {
-            this.transform.position = new Vector3(this.transform.position.x, lastHitResult.point.y + ColliderSize, this.transform.position.z);
+            this.transform.position = new Vector3(this.transform.position.x, lastHitResult.point.y + ColliderSizeVertical, this.transform.position.z);
             Velocity.y = 0;
             isGrounded = true;
         }
-        else //otherwise we're not grounded D:
+        else //otherwise we're not grounded
         {
             isGrounded = false;
         }
@@ -306,14 +323,14 @@ public class Simple2dPlatformController : MonoBehaviour
     /// </summary>
     void WallTest()
     {
-        if (Velocity.x < 0 && Raycast(-this.transform.right, Walls)) //Only test Left if we're moving Left
+        if (Velocity.x < 0 && RaycastHorizontal(-this.transform.right, Walls)) //Only test Left if we're moving Left
         {
-            this.transform.position = new Vector3(lastHitResult.point.x + ColliderSize, this.transform.position.y, this.transform.position.z);
+            this.transform.position = new Vector3(lastHitResult.point.x + ColliderSizeHorizontal, this.transform.position.y, this.transform.position.z);
             Velocity.x = 0;
         }
-        if (Velocity.x > 0 && Raycast(this.transform.right, Walls)) //Only test Right if we're moving Right
+        if (Velocity.x > 0 && RaycastHorizontal(this.transform.right, Walls)) //Only test Right if we're moving Right
         {
-            this.transform.position = new Vector3(lastHitResult.point.x - ColliderSize, this.transform.position.y, this.transform.position.z);
+            this.transform.position = new Vector3(lastHitResult.point.x - ColliderSizeHorizontal, this.transform.position.y, this.transform.position.z);
             Velocity.x = 0;
         }
 

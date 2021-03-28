@@ -46,11 +46,19 @@ public class PlayerAnimationHandler : MonoBehaviour
         if (velX > 0)
         {
             spriteRenderer.flipX = false;
+            if(playerController.ColliderOffsetHorizontal > 0)
+            {
+                playerController.ColliderOffsetHorizontal *= -1f;
+            }
         }
         
         if (velX < 0)
         {
             spriteRenderer.flipX = true;
+            if (playerController.ColliderOffsetHorizontal < 0)
+            {
+                playerController.ColliderOffsetHorizontal *= -1f;
+            }
         }
     }
 }
