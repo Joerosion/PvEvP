@@ -50,6 +50,7 @@ public class SkeletonBehavior : MonoBehaviour
     private GameObject closestPLayerInAggroRange;
     private float currentPlayerTargetTimeLeftAggroRange;
     private bool inMotion = false;
+    private float currentWanderTarget;
         
     private void Awake()
     {
@@ -84,6 +85,7 @@ public class SkeletonBehavior : MonoBehaviour
             //everyframe there is a player target in aggro Range find time
             currentPlayerTargetTimeLeftAggroRange = Time.time;
             isWandering = false;
+            currentWanderTarget = 0;
         }
 
         if(Time.time > currentPlayerTargetTimeLeftAggroRange + aggroAttentionTime)
@@ -115,11 +117,14 @@ public class SkeletonBehavior : MonoBehaviour
         //Movement enacted
         if (Mathf.Abs (targetLocation.x - transform.position.x) > spriteRenderer.bounds.extents.x + enemyMovementOffset)
         {
-        Vector3 currentposition = transform.position;
-        currentposition.x += direction * speed * Time.deltaTime;
-        transform.position = currentposition;
-
-            inMotion = true;
+            Vector3 currentposition = transform.position;
+            currentposition.x += direction * speed * Time.deltaTime;
+            transform.position = currentposition;
+           
+            if(isWait == false)
+            {
+                inMotion = true;
+            }
         }
         else
         {
@@ -151,13 +156,20 @@ public class SkeletonBehavior : MonoBehaviour
     {
         float deltaTargetLocation = Mathf.Abs(targetLocation.x - currentLocation.x);
 
+        if(currentWanderTarget == 0f)
+        {
+            currentWanderTarget = spawnLocation.x + Random.Range(-wanderRange, wanderRange);
+        }
+
         if(deltaTargetLocation <= spriteRenderer.bounds.extents.x + enemyMovementOffset)
         {
             Wait(wanderWaitMin, wanderWaitMax);
 
-            targetLocation.x = spawnLocation.x + Random.Range(-wanderRange, wanderRange);
+            currentWanderTarget = spawnLocation.x + Random.Range(-wanderRange, wanderRange);
             //Debug.Log("Switch Direction");
         }
+
+        targetLocation = new Vector3(currentWanderTarget, transform.position.y, 0f);
     }
 
     void Direction()
