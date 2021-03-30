@@ -49,7 +49,7 @@ public class SkeletonBehavior : MonoBehaviour
     private GameObject currentPlayerTarget;
     private GameObject closestPLayerInAggroRange;
     private float currentPlayerTargetTimeLeftAggroRange;
-    private bool inMotion = true;
+    private bool inMotion = false;
         
     private void Awake()
     {
@@ -74,7 +74,7 @@ public class SkeletonBehavior : MonoBehaviour
             {
                 currentPlayerTarget = closestPLayerInAggroRange;
             }
-            else
+            else if (closestPLayerInAggroRange != null)
             {
                 if (Mathf.Abs(currentPlayerTarget.transform.position.x - transform.position.x) / Mathf.Abs(closestPLayerInAggroRange.transform.position.x - transform.position.x) <= aggroPercentOfDeltaForSwitch)
                 {
@@ -156,7 +156,7 @@ public class SkeletonBehavior : MonoBehaviour
             Wait(wanderWaitMin, wanderWaitMax);
 
             targetLocation.x = spawnLocation.x + Random.Range(-wanderRange, wanderRange);
-            Debug.Log("Switch Direction");
+            //Debug.Log("Switch Direction");
         }
     }
 
@@ -180,13 +180,14 @@ public class SkeletonBehavior : MonoBehaviour
         {
             waitTime = Time.time + Random.Range(minWaitTime, maxWaitTime);
             tempSpeed = speed;
-            Debug.Log("Start waiting...");
+            //Debug.Log("Start waiting...");
         }
         if (Time.time <= waitTime)
         {
             speed = 0;
             isWait = true;
             inMotion = false;
+            Debug.Log("Setting inMotion to FALSE");
             return;
         }
         else
@@ -194,7 +195,7 @@ public class SkeletonBehavior : MonoBehaviour
             speed = tempSpeed;
             isWait = false;
             inMotion = true;
-            Debug.Log("Done waiting...");
+            //Debug.Log("Done waiting...");
         }
 
     }
@@ -214,7 +215,7 @@ public class SkeletonBehavior : MonoBehaviour
         {
             float closestPLayerDistance = aggroRangeWidth;
 
-           Debug.Log(detectedPlayers[0].name);
+           //Debug.Log(detectedPlayers[0].name);
            for (int i =0; i < detectedPlayers.Length; i++)
             {
                 playersInAggroRadius[i] = detectedPlayers[i];
