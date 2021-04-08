@@ -16,7 +16,6 @@ using UnityEngine;
 
 public class SkeletonBehavior : MonoBehaviour
 {
-
     public float speed = 3f;
     public float wanderRange = 5f;
     public float wanderWaitMin = 0f;
@@ -25,17 +24,24 @@ public class SkeletonBehavior : MonoBehaviour
     public float aggroRangeWidth = 5f;
     public float aggroRangeHeightOffest = -.3f;
     public LayerMask playerLayer;
+    public ContactFilter2D playerFilter;
     public float aggroPercentOfDeltaForSwitch = .5f;
     public float aggroAttentionTime = 2f;
     public float enemyMovementOffset = .1f;
+    public float attackRangeHeight = 1f;
+    public float attackRangeWidth = 1f;
+    public float attackRangeHeightOffest = .5f;
+    public bool isAttacking = false;
 
     private Animator animator;
     private int isWalkingHash;
+    private int toAttackHash;
     private SpriteRenderer spriteRenderer;
 
 
 
     private int direction = 1;
+    private float currentSpeed;
     private Vector3 spawnLocation;
     private Vector3 targetLocation;
     private Vector3 currentLocation;
@@ -45,23 +51,31 @@ public class SkeletonBehavior : MonoBehaviour
     private bool isWandering = true;
     private Vector2 aggroRangeBottomLeft;
     private Vector2 aggroRangeTopRight;
+    private Vector2 attackRangeTopLeft;
+    private Vector2 attackRangeBottomRight;
     private Collider2D[] playersInAggroRadius;
     private GameObject currentPlayerTarget;
     private GameObject closestPLayerInAggroRange;
     private float currentPlayerTargetTimeLeftAggroRange;
     private bool inMotion = false;
     private float currentWanderTarget;
-        
+    private Collider2D hitBox;
+    private Collider2D[] hitPlayers;
+
+
     private void Awake()
     {
         animator = GetComponent<Animator>();
         isWalkingHash = Animator.StringToHash("isWalking");
+        toAttackHash = Animator.StringToHash("toAttack");
         spriteRenderer = GetComponent<SpriteRenderer>();
         spawnLocation = transform.parent.transform.position;
         currentLocation = transform.position;
         targetLocation = currentLocation;
         playersInAggroRadius = new Collider2D[6];
-        
+        hitPlayers = new Collider2D[6];
+        hitBox = transform.Find("HitBox").gameObject.GetComponent<CapsuleCollider2D>();
+        currentSpeed = speed;
     }
 
     private void Update()
@@ -114,11 +128,14 @@ public class SkeletonBehavior : MonoBehaviour
             Wait(0f, 0f);
         }
 
+        Attack();
+
+
         //Movement enacted
-        if (Mathf.Abs (targetLocation.x - transform.position.x) > spriteRenderer.bounds.extents.x + enemyMovementOffset)
+        if (Mathf.Abs (targetLocation.x - transform.position.x) > spriteRenderer.bounds.extents.x + enemyMovementOffset && isAttacking == false)
         {
             Vector3 currentposition = transform.position;
-            currentposition.x += direction * speed * Time.deltaTime;
+            currentposition.x += direction * currentSpeed * Time.deltaTime;
             transform.position = currentposition;
            
             if(isWait == false)
@@ -143,12 +160,17 @@ public class SkeletonBehavior : MonoBehaviour
 
         if (direction > 0)
         {
-            spriteRenderer.flipX = false;
+            Quaternion currentRotation = transform.rotation;
+            currentRotation.y = 0;
+            transform.rotation = currentRotation;
+
         }
         
         if (direction < 0)
         {
-            spriteRenderer.flipX = true;
+            Quaternion currentRotation = transform.rotation;
+            currentRotation.y = 180;
+            transform.rotation = currentRotation;
         }
     }
 
@@ -191,12 +213,11 @@ public class SkeletonBehavior : MonoBehaviour
         if (isWait == false)
         {
             waitTime = Time.time + Random.Range(minWaitTime, maxWaitTime);
-            tempSpeed = speed;
             //Debug.Log("Start waiting...");
         }
         if (Time.time <= waitTime)
         {
-            speed = 0;
+            currentSpeed = 0;
             isWait = true;
             inMotion = false;
             Debug.Log("Setting inMotion to FALSE");
@@ -204,7 +225,7 @@ public class SkeletonBehavior : MonoBehaviour
         }
         else
         {
-            speed = tempSpeed;
+            currentSpeed = speed;
             isWait = false;
             inMotion = true;
             //Debug.Log("Done waiting...");
@@ -241,6 +262,32 @@ public class SkeletonBehavior : MonoBehaviour
         }
     }
 
+    void Attack()
+    {
+
+        attackRangeTopLeft = new Vector2(transform.position.x, transform.position.y + attackRangeHeight + attackRangeHeightOffest);
+        attackRangeBottomRight = new Vector2(transform.position.x + (attackRangeWidth * direction), transform.position.y - attackRangeHeight + attackRangeHeightOffest);
+
+        if (Physics2D.OverlapAreaAll(attackRangeTopLeft, attackRangeBottomRight, playerLayer).Length > 0 && isAttacking == false)
+        {
+            animator.SetTrigger(toAttackHash);
+        }
+
+        float howManyPlayersHit = Physics2D.OverlapCollider(hitBox, playerFilter, hitPlayers);
+
+
+        if (howManyPlayersHit > 0)
+        {
+            for (int i = 0; i < howManyPlayersHit; i++)
+            {
+                Debug.Log(hitPlayers[i].name + " was Hit!");
+            }
+
+        }
+
+
+    }
+
     void OnDrawGizmosSelected()
     {
         // Display WanderTargetLocation
@@ -257,6 +304,16 @@ public class SkeletonBehavior : MonoBehaviour
         Gizmos.DrawLine(aggroRangeTopLeft, aggroRangeTopRight);
         Gizmos.DrawLine(aggroRangeTopRight, aggroRangeBottomRight);
         Gizmos.DrawLine(aggroRangeBottomRight, aggroRangeBottomLeft);
+
+        // Display attackRangeArea
+        Vector2 attackRangeBottomLeft = new Vector2(transform.position.x, transform.position.y - attackRangeHeight + attackRangeHeightOffest);
+        Vector2 attackRangeTopRight = new Vector2(transform.position.x + (attackRangeWidth * direction), transform.position.y + attackRangeHeight + attackRangeHeightOffest);
+
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawLine(attackRangeBottomLeft, attackRangeTopLeft);
+        Gizmos.DrawLine(attackRangeTopLeft, attackRangeTopRight);
+        Gizmos.DrawLine(attackRangeTopRight, attackRangeBottomRight);
+        Gizmos.DrawLine(attackRangeBottomRight, attackRangeBottomLeft);
 
 
     }
