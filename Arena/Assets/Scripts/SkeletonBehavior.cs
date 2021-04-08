@@ -117,7 +117,7 @@ public class SkeletonBehavior : MonoBehaviour
             WanderTargetLocation();
         }
 
-        if (isWait == false)
+        if (isWait == false && isAttacking == false)
         {
             Direction();
         }
