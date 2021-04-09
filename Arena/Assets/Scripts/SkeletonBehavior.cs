@@ -65,6 +65,7 @@ public class SkeletonBehavior : MonoBehaviour
     private Collider2D hitBox;
     private Collider2D[] hitPlayers;
     private float currentAttackDelay = 0;
+    private bool isAttackDelay = false;
 
 
     private void Awake()
@@ -104,7 +105,7 @@ public class SkeletonBehavior : MonoBehaviour
                     currentPlayerTarget = closestPLayerInAggroRange;
                 }
             }
-            //everyframe there is a player target in aggro Range find time
+            //everyframe there is a player target in aggro Range find time and set wandering to false
             currentPlayerTargetTimeLeftAggroRange = Time.time;
             isWandering = false;
             currentWanderTarget = 0;
@@ -243,7 +244,7 @@ public class SkeletonBehavior : MonoBehaviour
     {
         aggroRangeBottomLeft = new Vector2 (transform.position.x - aggroRangeWidth, transform.position.y + aggroRangeHeightOffest);
         aggroRangeTopRight = new Vector2(transform.position.x + aggroRangeWidth, transform.position.y + aggroRangeHeightOffest + aggroRangeHeight);
-
+        float closestPLayerDistance;
 
         //Collects a collider of players in the aggroRange if no players in range collider length is 0
         Collider2D[] detectedPlayers = Physics2D.OverlapAreaAll(aggroRangeBottomLeft, aggroRangeTopRight, playerLayer);
@@ -255,10 +256,17 @@ public class SkeletonBehavior : MonoBehaviour
        
         if(detectedPlayers.Length > 0)
         {
-            float closestPLayerDistance = Mathf.Abs(targetLocation.x - transform.position.x);
+            if (isWandering)
+            {
+                closestPLayerDistance = aggroRangeWidth;
+            }
+            else
+            {
+                closestPLayerDistance = Mathf.Abs(targetLocation.x - transform.position.x);
+            }
 
-           //Debug.Log(detectedPlayers[0].name);
-           for (int i =0; i < detectedPlayers.Length; i++)
+            //Debug.Log(detectedPlayers[0].name);
+            for (int i =0; i < detectedPlayers.Length; i++)
             {
                 playersInAggroRadius[i] = detectedPlayers[i];
 
@@ -277,19 +285,35 @@ public class SkeletonBehavior : MonoBehaviour
         attackRangeTopLeft = new Vector2(transform.position.x, transform.position.y + attackRangeHeight + attackRangeHeightOffest);
         attackRangeBottomRight = new Vector2(transform.position.x + (attackRangeWidth * direction), transform.position.y - attackRangeHeight + attackRangeHeightOffest);
 
-        //creates an array of all players within the aggroRange and starts the attack
+        //creates an array of all players within the aggroRange and starts the attackDelay
         if (Physics2D.OverlapAreaAll(attackRangeTopLeft, attackRangeBottomRight, playerLayer).Length > 0 && isAttacking == false)
         {
+            isAttackDelay = true;
+        }
+        if (isAttackDelay == true)
+        {
+            //this counts down the delay and forces the skeleton to wait for a frame
             currentAttackDelay -= Time.deltaTime;
-            
+
+            Wait(Time.deltaTime, Time.deltaTime);
+
+            //When the Delay is over start the attack animation
             if (currentAttackDelay <= 0)
             {
                 //sets the Trigger that starts the animation, the animation activates a bool isAttacking and enables/disables the collider hitBox
                 animator.SetTrigger(toAttackHash);
 
                 currentAttackDelay = attackDelay;
+
+                //reset his attacking pahse
+                isAttackDelay = false;
+
+                //sets a wait period after the skeleton attacks only applies if there is no target in attackRange becuase wait only stops movement and direction change
+                Wait(attackWait, attackWait);
+
             }
         }
+       
 
         //find what players are in the hitBox collider while it is enabled
         float howManyPlayersHit = Physics2D.OverlapCollider(hitBox, playerFilter, hitPlayers);
@@ -301,9 +325,6 @@ public class SkeletonBehavior : MonoBehaviour
             {
                 Debug.Log(hitPlayers[i].name + " was Hit!");
             }
-
-            //sets a wait period after the skeleton attacks
-            Wait(attackWait,attackWait);
 
         }
 
