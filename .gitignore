@@ -1,6 +1,10 @@
-﻿Arena/Library/
+Arena/Library/
 Arena/.vsconfig
 Arena/Logs/
 Arena/Temp/
 Arena/.vs/
 *.csproj
+Arena/.idea/
+*.sln
+Arena/Assets/.DS_Store
+Arena/obj/
