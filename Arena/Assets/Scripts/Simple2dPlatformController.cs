@@ -4,6 +4,7 @@
 ///// 23/11/2014
 /////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Collections;
 /*  
  * This is a basic, but powerful barebones 2D platform controller for Unity
@@ -18,14 +19,14 @@ using UnityEngine.InputSystem;
 public class Simple2dPlatformController : MonoBehaviour
 {
     private bool wasJumpPressed;
-    private bool platformDropDown = false;
+    private bool canDropThroughPlatforms = true;
     private PlayerControls playerControls;
     private PlayerAnimationHandler playerAnimationHandler;
     private bool jumpHeld;
     private float timeLeftGround;
-    float horizontalMovementInput = 0f;
-    float verticalMovement = 0f;
-
+    float horizontalInput = 0f;
+    float verticalInput = 0f;
+    
     #region Public Variables, hidden from inspector
     /// <summary>
     /// Other scripts might want to access these at some point
@@ -68,7 +69,13 @@ public class Simple2dPlatformController : MonoBehaviour
     public float ColliderSizeHorizontal = 0.15f;
     public float ColliderOffsetVertical = 0.0f;
     public float ColliderOffsetHorizontal = 0.0f;
+
     [Space(10)]
+
+    // Deleteme
+    private bool isFlyingOffWall;
+    private float flyingOffWallTime = 0.25f;
+    private float flyingOffTimeCurrent;
 
     /// <summary>
     /// At minimum you want 2 layers. One for your player and one for your geometry.
@@ -105,88 +112,82 @@ public class Simple2dPlatformController : MonoBehaviour
         playerControls.Disable();
     }
 
-    void Update()
+    private void Update()
     {
         //Player Input (Old Code)
         //var horizontalMovement = DigitalKeyboardControls ? Input.GetAxisRaw("Horizontal") : Input.GetAxis("Horizontal");
         //var verticalMovement = DigitalKeyboardControls ? Input.GetAxisRaw("Vertical") : Input.GetAxis("Vertical");
 
         //Player Input
-
-        horizontalMovementInput = 0f;
-        verticalMovement = 0f;
+        horizontalInput = 0f;
+        verticalInput = 0f;
 
         if(Mathf.Abs(playerControls.InGame.Horizontal.ReadValue<float>()) > HorizontalDeadZone)
         {
-            horizontalMovementInput = playerControls.InGame.Horizontal.ReadValue<float>();
-        }
-        else
-        {
-            horizontalMovementInput = 0f;
+            horizontalInput = playerControls.InGame.Horizontal.ReadValue<float>();
         }
 
         if (Mathf.Abs(playerControls.InGame.Vertical.ReadValue<float>()) > VerticalDeadZone)
         {
-            verticalMovement = playerControls.InGame.Vertical.ReadValue<float>();
-        }
-        else
-        {
-            verticalMovement = 0f;
+            verticalInput = playerControls.InGame.Vertical.ReadValue<float>();
         }
 
-        var canJump = GetCanJump();
-
-        //Simple Jump, ignored if you're pressing the DOWN key
-        if (verticalMovement >= 0 && (isGrounded || Time.time < timeLeftGround + jumpGracePeriod) && canJump)
+        if(CanJump())
         {
-            isGrounded = false;
-            playerAnimationHandler.TriggerJump();
-            Velocity.y = JumpStrength;
-        }
-
-        //Drop down from a platform, using DOWN and Jump
-        if (!platformDropDown && verticalMovement < 0 && isGrounded && canJump)
-        {
-            StartCoroutine(DropDown()); //We use a co-routine for this (explained below)
-        }
-
-        //Simple Horizontal Movement (Same in the air as on the ground)
-        if (horizontalMovementInput != 0)
-        {
-            if (Velocity.x == 0 || Mathf.Sign(horizontalMovementInput) == Mathf.Sign(Velocity.x))
+            //Drop down from a platform, using DOWN and Jump
+            if (verticalInput < 0 && isGrounded && canDropThroughPlatforms)
             {
-
-                //Added a Custom Toggle here for Velocity
-                if (UseAcceleration == true)
-                {
-                    Velocity.x += horizontalMovementInput * Acceleration * RunSpeed * Time.deltaTime;
-                }
-                else
-                {
-                    Velocity.x = horizontalMovementInput * RunSpeed;
-                }
-
+                StartCoroutine(DropDown()); //We use a co-routine for this (explained below)
             }
-            else //If we're moving in the opposite direction, skid.
+            else
             {
-
-                //Added a Custom Toggle here for Skid Velocity.
-                if (UseSkidAcceleration == true)
+                isGrounded = false;
+                playerAnimationHandler.TriggerJump();
+                Velocity.y = JumpStrength;
+                
+                // When on a wall and hit jump
+                if (wallSliding)
                 {
-                    Velocity.x += horizontalMovementInput * SkidAcceleration * RunSpeed * Time.deltaTime;
+                    flyingOffTimeCurrent = 0;
+                    isFlyingOffWall = true;
+                    Debug.LogError("Starting wall jump");
                 }
-                else
+            }
+        }
+        
+        //Simple Horizontal Movement (Same in the air as on the ground)
+        if (horizontalInput != 0)
+        {
+            if (isFlyingOffWall)
+            {
+                float time = flyingOffTimeCurrent / flyingOffWallTime;
+                // Movement to the left - modify based on jump direction
+                float flyingOffVelocity = horizontalInput * -RunSpeed;
+                float inputVelocity = horizontalInput * RunSpeed;
+                float finalVelocity = Mathf.Lerp(flyingOffVelocity, inputVelocity, time);
+
+                flyingOffTimeCurrent += Time.deltaTime;
+
+                if (flyingOffTimeCurrent >= flyingOffWallTime)
                 {
-                    Velocity.x = horizontalMovementInput * RunSpeed;
+                    isFlyingOffWall = false;
                 }
 
+                Velocity.x = finalVelocity;
+            }
+            else
+            {
+                Velocity.x = horizontalInput * RunSpeed;
             }
         }
         else if (Velocity.x != 0)
         {
-            //Velocity.x -= Mathf.Sign(Velocity.x) * Deceleration * Time.deltaTime;
             Velocity.x -= Velocity.x * Deceleration * Time.deltaTime;
-            Velocity.x = Velocity.x < VelocityClamp ? (Velocity.x > -VelocityClamp ? 0 : Velocity.x) : Velocity.x; //set to 0 if it's close enough
+
+            if (Mathf.Abs(Velocity.x) < VelocityClamp)
+            {
+                Velocity.x = 0;
+            }
         }
 
         //Send horizontal movement to the animation handler.
@@ -194,62 +195,17 @@ public class Simple2dPlatformController : MonoBehaviour
 
         //Clamp to maximum
         Velocity.x = Mathf.Clamp(Velocity.x, -MaximumHorizontalSpeed, MaximumHorizontalSpeed);
-        Velocity.y = Mathf.Clamp(Velocity.y, -MaximumVerticalSpeed, MaximumVerticalSpeed);
+        
         if (wallSliding)
         {
             Velocity.y = Mathf.Clamp(Velocity.y, -MaximumWallSlideSpeed, MaximumWallSlideSpeed);
         }
-    }
-
-    /// <summary>
-    /// Smooth Jump Button detection
-    /// </summary>
-    /// <returns>Whether or not the jump button is pressed AND you can jump</returns>
-    private bool GetCanJump()
-    {
-        //Input.GetButtonDown tends to be quite 'sticky' and sometimes doesn't fire. 
-        //This is a smoother way of doing things
-
-        //Old Input System
-        //var jumpButtonDown = Input.GetButton("Jump");
-
-        bool jumpButtonDown = playerControls.InGame.Jump.triggered;
-
-        //If we have previously pressed the jump button and the jump button has been released
-        if (wasJumpPressed && !jumpButtonDown)
+        else
         {
-            wasJumpPressed = false; //Re-enable jumping
+            Velocity.y = Mathf.Clamp(Velocity.y, -MaximumVerticalSpeed, MaximumVerticalSpeed);
         }
-        if ((isGrounded || Time.time < timeLeftGround + jumpGracePeriod) && jumpButtonDown && !wasJumpPressed)
-        {
-            wasJumpPressed = true; //Disable jumping
-            return true; //tell the parent that we've jumped
-        }
-
-        return false; //Can't Jump, Won't Jump
-
-    }
-
-    /// <summary>
-    /// Drop Down from certain platforms. Call as CoRoutine
-    /// </summary>
-    /// <returns></returns>
-    private IEnumerator DropDown()
-    {
-        //A Naive WaitForSeconds is used here. You could, perhaps, get the current ground and just remove that from the calculations if you wanted to be smart about it.
-        platformDropDown = true; //Activate the dropdown flag
-        isGrounded = false; //tell the engine we're not grounded any more
-        yield return new WaitForSeconds(platformDropDownCoolDown); //wait x seconds (so that we don't just pop back up onto the platform we're on)
-        platformDropDown = false;  //Deactivate the dropdown flag
-
-    }
-
-    /// <summary>
-    /// Our physics loop
-    /// </summary>
-    void FixedUpdate()
-    {
-        //Add gravity if we're off the ground
+        
+        // Gravity
         if (!isGrounded)
         {
             if(Velocity.y < 0) //Adopted code from the "Better Jumps" philosophy. Right now, we start applying stronger gravity when the player releases the jump button.
@@ -274,15 +230,57 @@ public class Simple2dPlatformController : MonoBehaviour
         }
 
         //Move the player
-        this.transform.position += Velocity * Time.fixedDeltaTime;
+        transform.position += Velocity * Time.fixedDeltaTime;
 
         //Collision tests!
         UpTest();
-        DownTest(!platformDropDown); //Down tests, pass in whether or not we want to do the platform drop-down tests or not
+        DownTest(canDropThroughPlatforms); //Down tests, pass in whether or not we want to do the platform drop-down tests or not
         WallTest();
-        playerAnimationHandler.UpdateAnimatorValues(horizontalMovementInput, Velocity.y, wallSliding, isGrounded);
+        playerAnimationHandler.UpdateAnimatorValues(horizontalInput, Velocity.y, wallSliding, isGrounded);
     }
 
+    /// <summary>
+    /// Smooth Jump Button detection
+    /// </summary>
+    /// <returns>Whether or not the jump button is pressed AND you can jump</returns>
+    private bool CanJump()
+    {
+        //Input.GetButtonDown tends to be quite 'sticky' and sometimes doesn't fire. 
+        //This is a smoother way of doing things
+
+        //Old Input System
+        //var jumpButtonDown = Input.GetButton("Jump");
+
+        bool jumpButtonDown = playerControls.InGame.Jump.triggered;
+
+        //If we have previously pressed the jump button and the jump button has been released
+        if (wasJumpPressed && !jumpButtonDown)
+        {
+            wasJumpPressed = false; //Re-enable jumping
+        }
+        if (((isGrounded || wallSliding) || Time.time < timeLeftGround + jumpGracePeriod) && jumpButtonDown && !wasJumpPressed)
+        {
+            wasJumpPressed = true; //Disable jumping
+            return true; //tell the parent that we've jumped
+        }
+
+        return false; //Can't Jump, Won't Jump
+
+    }
+
+    /// <summary>
+    /// Drop Down from certain platforms. Call as CoRoutine
+    /// </summary>
+    /// <returns></returns>
+    private IEnumerator DropDown()
+    {
+        //A Naive WaitForSeconds is used here. You could, perhaps, get the current ground and just remove that from the calculations if you wanted to be smart about it.
+        canDropThroughPlatforms = false; //Activate the dropdown flag
+        isGrounded = false; //tell the engine we're not grounded any more
+        yield return new WaitForSeconds(platformDropDownCoolDown); //wait x seconds (so that we don't just pop back up onto the platform we're on)
+        canDropThroughPlatforms = true;  //Deactivate the dropdown flag
+    }
+    
     /// <summary>
     /// Used in Raycast shortcut
     /// </summary>
@@ -355,7 +353,7 @@ public class Simple2dPlatformController : MonoBehaviour
             this.transform.position = new Vector3(lastHitResult.point.x + ColliderSizeHorizontal, this.transform.position.y, this.transform.position.z);
             Velocity.x = 0;
 
-            if (horizontalMovementInput < 0 && isGrounded == false && Velocity.y < 0)
+            if (horizontalInput < 0 && isGrounded == false && Velocity.y < 0)
             {
                 if (wallSliding == false)
                 {
@@ -370,7 +368,7 @@ public class Simple2dPlatformController : MonoBehaviour
         {
             this.transform.position = new Vector3(lastHitResult.point.x - ColliderSizeHorizontal, this.transform.position.y, this.transform.position.z);
             Velocity.x = 0;
-            if (horizontalMovementInput > 0 && isGrounded == false && Velocity.y < 0)
+            if (horizontalInput > 0 && isGrounded == false && Velocity.y < 0)
             {
                 //Velocity.y = 0f;
                 wallSliding = true;
