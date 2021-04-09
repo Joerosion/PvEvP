@@ -289,6 +289,9 @@ public class Simple2dPlatformController : MonoBehaviour
     /// Used in Raycast shortcut
     /// </summary>
     RaycastHit2D lastHitResult = new RaycastHit2D();
+    RaycastHit2D lastHitResult2 = new RaycastHit2D();
+
+
     /// <summary>
     /// Raycast shortcut
     /// </summary>
@@ -306,10 +309,19 @@ public class Simple2dPlatformController : MonoBehaviour
 
     bool RaycastHorizontal(Vector2 Direction, LayerMask mask)
     {
-        lastHitResult = Physics2D.Raycast(new Vector2(this.transform.position.x + ColliderOffsetHorizontal, this.transform.position.y),
-                                                                                              Direction, ColliderSizeHorizontal, mask);
-        Debug.DrawLine(new Vector2(transform.position.x + ColliderOffsetHorizontal, transform.position.y),
-                       new Vector2(transform.position.x + ColliderOffsetHorizontal + (Direction.x * ColliderSizeHorizontal), transform.position.y), Color.red); 
+        lastHitResult = Physics2D.Raycast(new Vector2(transform.position.x + ColliderOffsetHorizontal,
+                                                        (transform.position.y + ColliderOffsetVertical) + (ColliderSizeVertical / 2)),
+                                                       Direction, ColliderSizeHorizontal, mask);
+        Debug.DrawLine(new Vector2(transform.position.x + ColliderOffsetHorizontal, (transform.position.y + ColliderOffsetVertical) + (ColliderSizeVertical/2)),
+                       new Vector2(transform.position.x + ColliderOffsetHorizontal + (Direction.x * ColliderSizeHorizontal), (transform.position.y + ColliderOffsetVertical) + (ColliderSizeVertical / 2)), Color.red);
+
+        if (lastHitResult.transform != null && lastHitResult.collider != null) return true;
+
+        lastHitResult = Physics2D.Raycast(new Vector2(transform.position.x + ColliderOffsetHorizontal,
+                                                        (transform.position.y + ColliderOffsetVertical) - (ColliderSizeVertical / 2)),
+                                                       Direction, ColliderSizeHorizontal, mask);
+        Debug.DrawLine(new Vector2(transform.position.x + ColliderOffsetHorizontal, (transform.position.y + ColliderOffsetVertical) - (ColliderSizeVertical / 2)),
+                       new Vector2(transform.position.x + ColliderOffsetHorizontal + (Direction.x * ColliderSizeHorizontal), (transform.position.y + ColliderOffsetVertical) - (ColliderSizeVertical / 2)), Color.black);
 
         if (lastHitResult.transform != null && lastHitResult.collider != null) return true;
         return false;
