@@ -32,6 +32,9 @@ public class SkeletonBehavior : MonoBehaviour
     public float attackRangeWidth = 1f;
     public float attackRangeHeightOffest = .5f;
     public bool isAttacking = false;
+    public float attackDelay = 1;
+    public float attackWait = 1;
+
 
     private Animator animator;
     private int isWalkingHash;
@@ -61,6 +64,7 @@ public class SkeletonBehavior : MonoBehaviour
     private float currentWanderTarget;
     private Collider2D hitBox;
     private Collider2D[] hitPlayers;
+    private float currentAttackDelay = 0;
 
 
     private void Awake()
@@ -76,6 +80,7 @@ public class SkeletonBehavior : MonoBehaviour
         hitPlayers = new Collider2D[6];
         hitBox = transform.Find("HitBox").gameObject.GetComponent<CapsuleCollider2D>();
         currentSpeed = speed;
+        currentAttackDelay = attackDelay;
     }
 
     private void Update()
@@ -83,6 +88,8 @@ public class SkeletonBehavior : MonoBehaviour
         currentLocation = transform.position;
         DetectPlayersInAggroRange();
 
+
+        //Finds and picks a player target in aggroRange
         if (playersInAggroRadius[0] != null)
         {
             if (currentPlayerTarget == null)
@@ -91,6 +98,7 @@ public class SkeletonBehavior : MonoBehaviour
             }
             else if (closestPLayerInAggroRange != null)
             {
+                //Picks clostest player only if closer to skeleton by % set
                 if (Mathf.Abs(currentPlayerTarget.transform.position.x - transform.position.x) / Mathf.Abs(closestPLayerInAggroRange.transform.position.x - transform.position.x) <= aggroPercentOfDeltaForSwitch)
                 {
                     currentPlayerTarget = closestPLayerInAggroRange;
@@ -101,7 +109,7 @@ public class SkeletonBehavior : MonoBehaviour
             isWandering = false;
             currentWanderTarget = 0;
         }
-
+        //this is where he will wait for the aggroAttentionTime before he starts wandering
         if(Time.time > currentPlayerTargetTimeLeftAggroRange + aggroAttentionTime)
         {
             currentPlayerTarget = null;
@@ -127,6 +135,7 @@ public class SkeletonBehavior : MonoBehaviour
         {
             Wait(0f, 0f);
         }
+
 
         Attack();
 
@@ -188,7 +197,6 @@ public class SkeletonBehavior : MonoBehaviour
             Wait(wanderWaitMin, wanderWaitMax);
 
             currentWanderTarget = spawnLocation.x + Random.Range(-wanderRange, wanderRange);
-            //Debug.Log("Switch Direction");
         }
 
         targetLocation = new Vector3(currentWanderTarget, transform.position.y, 0f);
@@ -213,7 +221,6 @@ public class SkeletonBehavior : MonoBehaviour
         if (isWait == false)
         {
             waitTime = Time.time + Random.Range(minWaitTime, maxWaitTime);
-            //Debug.Log("Start waiting...");
         }
         if (Time.time <= waitTime)
         {
@@ -228,7 +235,6 @@ public class SkeletonBehavior : MonoBehaviour
             currentSpeed = speed;
             isWait = false;
             inMotion = true;
-            //Debug.Log("Done waiting...");
         }
 
     }
@@ -238,15 +244,18 @@ public class SkeletonBehavior : MonoBehaviour
         aggroRangeBottomLeft = new Vector2 (transform.position.x - aggroRangeWidth, transform.position.y + aggroRangeHeightOffest);
         aggroRangeTopRight = new Vector2(transform.position.x + aggroRangeWidth, transform.position.y + aggroRangeHeightOffest + aggroRangeHeight);
 
+
+        //Collects a collider of players in the aggroRange if no players in range collider length is 0
         Collider2D[] detectedPlayers = Physics2D.OverlapAreaAll(aggroRangeBottomLeft, aggroRangeTopRight, playerLayer);
 
         closestPLayerInAggroRange = null;
 
+        //resets the array to not double place targets if in range for more then one frame
         playersInAggroRadius = new Collider2D[playersInAggroRadius.Length];
        
         if(detectedPlayers.Length > 0)
         {
-            float closestPLayerDistance = aggroRangeWidth;
+            float closestPLayerDistance = Mathf.Abs(targetLocation.x - transform.position.x);
 
            //Debug.Log(detectedPlayers[0].name);
            for (int i =0; i < detectedPlayers.Length; i++)
@@ -268,20 +277,33 @@ public class SkeletonBehavior : MonoBehaviour
         attackRangeTopLeft = new Vector2(transform.position.x, transform.position.y + attackRangeHeight + attackRangeHeightOffest);
         attackRangeBottomRight = new Vector2(transform.position.x + (attackRangeWidth * direction), transform.position.y - attackRangeHeight + attackRangeHeightOffest);
 
+        //creates an array of all players within the aggroRange and starts the attack
         if (Physics2D.OverlapAreaAll(attackRangeTopLeft, attackRangeBottomRight, playerLayer).Length > 0 && isAttacking == false)
         {
-            animator.SetTrigger(toAttackHash);
+            currentAttackDelay -= Time.deltaTime;
+            
+            if (currentAttackDelay <= 0)
+            {
+                //sets the Trigger that starts the animation, the animation activates a bool isAttacking and enables/disables the collider hitBox
+                animator.SetTrigger(toAttackHash);
+
+                currentAttackDelay = attackDelay;
+            }
         }
 
+        //find what players are in the hitBox collider while it is enabled
         float howManyPlayersHit = Physics2D.OverlapCollider(hitBox, playerFilter, hitPlayers);
 
-
+        //this is where we would do whatever we will do to kill the player, currently can happen more then once per attack
         if (howManyPlayersHit > 0)
         {
             for (int i = 0; i < howManyPlayersHit; i++)
             {
                 Debug.Log(hitPlayers[i].name + " was Hit!");
             }
+
+            //sets a wait period after the skeleton attacks
+            Wait(attackWait,attackWait);
 
         }
 
