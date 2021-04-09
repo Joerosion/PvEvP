@@ -24,6 +24,7 @@ public class Simple2dPlatformController : MonoBehaviour
     private PlayerAnimationHandler playerAnimationHandler;
     private bool jumpHeld;
     private float timeLeftGround;
+    private float wallJumpDirection;
     float horizontalInput = 0f;
     float verticalInput = 0f;
     
@@ -54,8 +55,8 @@ public class Simple2dPlatformController : MonoBehaviour
     public bool UseAcceleration = false;
     public float Acceleration = 10f;
     public float Deceleration = 10f;
-    public float SkidAcceleration = 20f;
     public bool UseSkidAcceleration = false;
+    public float SkidAcceleration = 20f;
     public float MaximumHorizontalSpeed = 10f;
     public float MaximumVerticalSpeed = 8f;
     public float MaximumWallSlideSpeed = 3f;
@@ -74,7 +75,7 @@ public class Simple2dPlatformController : MonoBehaviour
 
     // Deleteme
     private bool isFlyingOffWall;
-    private float flyingOffWallTime = 0.25f;
+    public float flyingOffWallTime = 0.5f;
     private float flyingOffTimeCurrent;
 
     /// <summary>
@@ -150,6 +151,7 @@ public class Simple2dPlatformController : MonoBehaviour
                 {
                     flyingOffTimeCurrent = 0;
                     isFlyingOffWall = true;
+                    wallJumpDirection = -Mathf.Sign(horizontalInput);
                     Debug.LogError("Starting wall jump");
                 }
             }
@@ -162,7 +164,7 @@ public class Simple2dPlatformController : MonoBehaviour
             {
                 float time = flyingOffTimeCurrent / flyingOffWallTime;
                 // Movement to the left - modify based on jump direction
-                float flyingOffVelocity = horizontalInput * -RunSpeed;
+                float flyingOffVelocity = -wallJumpDirection * -JumpStrength;
                 float inputVelocity = horizontalInput * RunSpeed;
                 float finalVelocity = Mathf.Lerp(flyingOffVelocity, inputVelocity, time);
 
@@ -225,17 +227,19 @@ public class Simple2dPlatformController : MonoBehaviour
             }
             else
             {
-                Velocity.y += Gravity * Time.fixedDeltaTime;
+                Velocity.y += Gravity * Time.deltaTime;
             }
         }
-
-        //Move the player
-        transform.position += Velocity * Time.fixedDeltaTime;
 
         //Collision tests!
         UpTest();
         DownTest(canDropThroughPlatforms); //Down tests, pass in whether or not we want to do the platform drop-down tests or not
         WallTest();
+
+        //Move the player
+        transform.position += Velocity * Time.deltaTime;
+
+
         playerAnimationHandler.UpdateAnimatorValues(horizontalInput, Velocity.y, wallSliding, isGrounded);
     }
 
@@ -304,7 +308,10 @@ public class Simple2dPlatformController : MonoBehaviour
     {
         lastHitResult = Physics2D.Raycast(new Vector2(this.transform.position.x + ColliderOffsetHorizontal, this.transform.position.y),
                                                                                               Direction, ColliderSizeHorizontal, mask);
-        if (lastHitResult != null && lastHitResult.collider != null) return true;
+        Debug.DrawLine(new Vector2(transform.position.x + ColliderOffsetHorizontal, transform.position.y),
+                       new Vector2(transform.position.x + ColliderOffsetHorizontal + (Direction.x * ColliderSizeHorizontal), transform.position.y), Color.red); 
+
+        if (lastHitResult.transform != null && lastHitResult.collider != null) return true;
         return false;
     }
     /// <summary>
@@ -313,7 +320,7 @@ public class Simple2dPlatformController : MonoBehaviour
     void UpTest()
     {
         if (Velocity.y < 0) return; //Don't bother unless we're moving upwards
-        if (RaycastVertical(this.transform.up, Roofs))
+        if (RaycastVertical(this.transform.up, Walls))
         {
             this.transform.position = new Vector3(this.transform.position.x, lastHitResult.point.y - ColliderSizeVertical, this.transform.position.z);
             Velocity.y = 0;
@@ -328,7 +335,7 @@ public class Simple2dPlatformController : MonoBehaviour
         //Only test if we're moving downwards, or not moving vertically at all
         if ((Velocity.y <= 0) && RaycastVertical(-this.transform.up, TestAllColliders ? (Platforms | Walls | Roofs) : (Walls | Roofs)))
         {
-            this.transform.position = new Vector3(this.transform.position.x, lastHitResult.point.y + ColliderSizeVertical, this.transform.position.z);
+            this.transform.position = new Vector3(this.transform.position.x, lastHitResult.point.y + ColliderSizeVertical - ColliderOffsetVertical, this.transform.position.z);
             Velocity.y = 0;
             isGrounded = true;
             wallSliding = false;
@@ -350,7 +357,7 @@ public class Simple2dPlatformController : MonoBehaviour
     {
         if (Velocity.x < 0 && RaycastHorizontal(-this.transform.right, Walls)) //Only test Left if we're moving or holding Left
         {
-            this.transform.position = new Vector3(lastHitResult.point.x + ColliderSizeHorizontal, this.transform.position.y, this.transform.position.z);
+            this.transform.position = new Vector3(lastHitResult.point.x + ColliderSizeHorizontal - ColliderOffsetHorizontal, this.transform.position.y, this.transform.position.z);
             Velocity.x = 0;
 
             if (horizontalInput < 0 && isGrounded == false && Velocity.y < 0)
@@ -366,7 +373,7 @@ public class Simple2dPlatformController : MonoBehaviour
         }
         else if (Velocity.x > 0 && RaycastHorizontal(this.transform.right, Walls)) //Only test Right if we're moving or holding Right
         {
-            this.transform.position = new Vector3(lastHitResult.point.x - ColliderSizeHorizontal, this.transform.position.y, this.transform.position.z);
+            this.transform.position = new Vector3(lastHitResult.point.x - ColliderSizeHorizontal - ColliderOffsetHorizontal, this.transform.position.y, this.transform.position.z);
             Velocity.x = 0;
             if (horizontalInput > 0 && isGrounded == false && Velocity.y < 0)
             {
