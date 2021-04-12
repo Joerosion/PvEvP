@@ -75,7 +75,7 @@ Transform:
   m_GameObject: {fileID: 7021750346403220796}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 2, y: 2, z: 2}
   m_Children:
   - {fileID: 68665915}
   m_Father: {fileID: 7021750346527768341}
@@ -122,9 +122,9 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 4723107735738678597, guid: 6d542c2128fec3540bce2ed2d72b5c53,
+  m_Sprite: {fileID: 7441861488978599509, guid: e3404e1339364c04e9ff594264829ce9,
     type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.013602734, g: 0, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -187,7 +187,7 @@ Animator:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7021750346403220796}
-  m_Enabled: 1
+  m_Enabled: 0
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: 14033171e63d06a4588a1bc7c6911e42, type: 2}
   m_CullingMode: 0
@@ -208,7 +208,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7021750346527768341}
   m_Layer: 0
-  m_Name: Skeleton
+  m_Name: MushroomMan
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

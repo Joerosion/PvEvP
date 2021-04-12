@@ -4,7 +4,6 @@
 ///// 23/11/2014
 /////////////////////////////////////////////////////////////////////
 
-using System;
 using System.Collections;
 /*  
  * This is a basic, but powerful barebones 2D platform controller for Unity
