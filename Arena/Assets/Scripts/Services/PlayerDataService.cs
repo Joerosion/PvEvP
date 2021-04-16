@@ -41,8 +41,3 @@ public class Player
 {
     public int GoldAmount { get; set; }
 }
-
-public class SpawnPlayerMessage
-{
-    public int EntityId { get; set; }
-}

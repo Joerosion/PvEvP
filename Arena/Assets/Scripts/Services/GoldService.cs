@@ -48,14 +48,3 @@ public class GoldService
         }
     }
 }
-
-public class DestroyGoldMessage
-{
-    public int EntityId { get; set; }
-}
-
-public class SpawnGoldMessage
-{
-    public int EntityId { get; set; }
-    public int Amount { get; set; }
-}
