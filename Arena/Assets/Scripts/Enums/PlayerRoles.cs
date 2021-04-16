@@ -1,6 +1,6 @@
 public enum PlayerRoles
 {
-    Peasent,
+    Peasant,
     Knight,
     Archer,
     Mage

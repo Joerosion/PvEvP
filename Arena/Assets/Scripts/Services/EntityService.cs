@@ -1,18 +1,11 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public class EntityService : MonoBehaviour
+public class EntityService
 {
-    // Start is called before the first frame update
-    void Start()
+    private int _currentId = 0;
+    
+    public int GetNewEntityId()
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        var newEntityId = _currentId;
+        _currentId++;
+        return newEntityId;
     }
 }

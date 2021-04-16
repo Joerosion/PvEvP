@@ -17,7 +17,7 @@ namespace Frictionless
 		public void AddListener<T>(Action<T> handler, ref Action unregisterAction)
 		{
 			AddListener(handler);
-			unregisterAction += () => { RemoveHandler(handler); };
+			unregisterAction += () => { RemoveListener(handler); };
 		}
 		
 		public void AddListener<T>(Action<T> handler)
@@ -36,7 +36,7 @@ namespace Frictionless
 			}
 		}
 
-		public void RemoveHandler<T>(Action<T> handler)
+		public void RemoveListener<T>(Action<T> handler)
 		{			
 			List<MessageHandler> delegates = null;
 			if (!_handlers.TryGetValue(typeof(T), out delegates))

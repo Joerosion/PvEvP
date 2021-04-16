@@ -396,6 +396,5 @@ public class Simple2dPlatformController : MonoBehaviour
         {
             wallSliding = false;
         }
-
     }
 }
