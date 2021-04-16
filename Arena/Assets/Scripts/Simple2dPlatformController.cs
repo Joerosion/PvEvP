@@ -199,11 +199,11 @@ public class Simple2dPlatformController : MonoBehaviour
         
         if (wallSliding)
         {
-            Velocity.y = Mathf.Clamp(Velocity.y, -MaximumWallSlideSpeed, MaximumWallSlideSpeed);
+            Velocity.y = Mathf.Clamp(Velocity.y, -MaximumWallSlideSpeed, MaximumWallSlideSpeed*2);
         }
         else
         {
-            Velocity.y = Mathf.Clamp(Velocity.y, -MaximumVerticalSpeed, MaximumVerticalSpeed);
+            Velocity.y = Mathf.Clamp(Velocity.y, -MaximumVerticalSpeed, MaximumVerticalSpeed*2);
         }
         
         // Gravity

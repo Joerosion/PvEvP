@@ -437,7 +437,7 @@ MonoBehaviour:
   VelocityClamp: 0.05
   HorizontalDeadZone: 0.1
   VerticalDeadZone: 0.3
-  Gravity: -10
+  Gravity: -20.01
   JumpStrength: 10
   RunSpeed: 5
   UseAcceleration: 0
@@ -450,7 +450,7 @@ MonoBehaviour:
   MaximumWallSlideSpeed: 3
   platformDropDownCoolDown: 0.5
   FallMultiplier: 2.5
-  LowJumpMultipler: 2
+  LowJumpMultipler: 10
   jumpGracePeriod: 0.1
   ColliderSizeVertical: 0.275
   ColliderSizeHorizontal: 0.24
