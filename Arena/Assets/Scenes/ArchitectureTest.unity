@@ -281,7 +281,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 388849867}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.1, y: -3.41, z: 0}
+  m_LocalPosition: {x: 1.65, y: -3.41, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 773444811}
@@ -5723,6 +5723,7 @@ MonoBehaviour:
   - {fileID: 388849868}
   - {fileID: 712856948}
   - {fileID: 1739488215}
+  _goldInstances: []
 --- !u!4 &773444811
 Transform:
   m_ObjectHideFlags: 0

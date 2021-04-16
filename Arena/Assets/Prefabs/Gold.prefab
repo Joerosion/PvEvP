@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 5158495857840254038}
   - component: {fileID: 974118952190224167}
   m_Layer: 9
-  m_Name: GoldSprite
+  m_Name: Gold
   m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

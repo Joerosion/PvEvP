@@ -32,9 +32,12 @@ public class PlayerInstance : EntityInstance
 
     private void OnTriggerEnter2D(Collider2D other)
     {
+        Debug.Log("We've touched a trigger");
+
         // The master function for the player colliding with another object
         if (other.gameObject.layer == LayerMask.NameToLayer("Gold"))
         {
+            Debug.Log("and that trigger is gold!");
             var goldId = other.gameObject.GetComponent<EntityInstance>().EntityId;
             _playerDataService.AddGold(goldId, EntityId);
         }
