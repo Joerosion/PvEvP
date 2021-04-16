@@ -4,15 +4,29 @@ using UnityEngine;
 
 public class PlayerData : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+
+    public bool isAlive;
+    public int health = 1;
+    public float attackDamage;
+    public int currentGold;
+    public PlayerRoles currentRole;
+    public int _entityID;
+    
+
+    public void OnChangeRole(PlayerRoles role, int entityID)
     {
+        if(_entityID != entityID)
+        {
+            return;
+        }
         
+        //do a check to make sure you arent already that role
+
+        currentRole = role;
+
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+
+
+
 }

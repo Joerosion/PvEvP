@@ -258,7 +258,7 @@ public class SkeletonBehavior : MonoBehaviour
         {
             if (isWandering)
             {
-                closestPLayerDistance = aggroRangeWidth;
+                closestPLayerDistance = aggroRangeWidth *2;
             }
             else
             {

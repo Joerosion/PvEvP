@@ -2,17 +2,32 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+//PlayerDataService
+//Functions:
+//SpawnPlayer
+//PlayerDeath
+//AddGold
+//RemoveGold
+//AssignRole
+//ApplyArmor
+//ApplyBuff
+//ProcessPlayerAttack
+
 public class PlayerDataService : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
 
-    // Update is called once per frame
-    void Update()
+    public void OnAddGold(int goldID, int playerID)
     {
-        
-    }
+
+    } 
+
+
+
+
+
+
+
+
+
+
 }
