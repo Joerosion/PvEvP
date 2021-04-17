@@ -4,6 +4,7 @@ public class EntityService
     
     public int GetNewEntityId()
     {
+        //Assigns and returns an ID value and increments currentID
         var newEntityId = _currentId;
         _currentId++;
         return newEntityId;

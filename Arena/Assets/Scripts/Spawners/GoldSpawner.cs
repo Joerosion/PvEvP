@@ -33,12 +33,18 @@ public class GoldSpawner : MonoBehaviour
 
     private void OnSpawnGold(SpawnGoldMessage message)
     {
+        //we've recived a spawn gold message
+
         //var transformToSpawnAt = _spawnPositions[Random.Range(0, _spawnPositions.Count)];
         var transformToSpawnAt = _spawnPositions[1];
         
+        //creating a gold prefab in view at the transformToSpawnAt
         var newGameObject = Instantiate(_goldPrefab, transformToSpawnAt);
+        //set goldInstance equal to the GoldInstance attached to the new Goldprefab
         var goldInstance = newGameObject.GetComponent<GoldInstance>();
         goldInstance.EntityId = message.EntityId;
+        goldInstance.amount = message.Amount;
+        //adding new instnace of gold to the list of current gold in View
         _goldInstances.Add(goldInstance);
     }
 }

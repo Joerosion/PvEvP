@@ -39,7 +39,7 @@ public class PlayerInstance : EntityInstance
         {
             Debug.Log("and that trigger is gold!");
             var goldId = other.gameObject.GetComponent<EntityInstance>().EntityId;
-            _playerDataService.AddGold(goldId, EntityId);
+            currentGold += _playerDataService.AddGold(goldId, EntityId);
         }
         else
         {

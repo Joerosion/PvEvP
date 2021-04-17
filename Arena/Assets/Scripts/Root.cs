@@ -17,7 +17,7 @@ public class Root : MonoBehaviour
     {
         yield return new WaitForSeconds(0.25f);
         ServiceFactory.Instance.GetService<PlayerDataService>().SpawnPlayer();
-        ServiceFactory.Instance.GetService<GoldService>().SpawnGold(10);
+        ServiceFactory.Instance.GetService<GoldService>().SpawnGold(5);
     }
 
     private void RegisterServices()

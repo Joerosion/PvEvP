@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Frictionless;
 using UnityEngine;
 
@@ -14,30 +15,50 @@ using UnityEngine;
 
 public class PlayerDataService
 {
-    private Player _player;
-    
-    public void SpawnPlayer()
-    {
-        _player = new Player();
-        
-        int instanceId = ServiceFactory.Instance.GetService<EntityService>().GetNewEntityId();
-        var messageRouter = ServiceFactory.Instance.GetService<MessageRouter>();
+    private PlayerData _player;
+    private List<PlayerData> _Players = new List<PlayerData>();
 
-        var spawnMessage = new SpawnPlayerMessage();
-        spawnMessage.EntityId = instanceId;
-        messageRouter.RaiseMessage(spawnMessage);
+    private MessageRouter _messageRouter;
+    private EntityService _entityService;
+
+    public PlayerDataService()
+    {
+        _messageRouter = ServiceFactory.Instance.GetService<MessageRouter>();
+        _entityService = ServiceFactory.Instance.GetService<EntityService>();
     }
 
-    public void AddGold(int goldId, int playerId)
+    public void SpawnPlayer()
+    {
+        //Calling on enityService to create a new ID
+        int entityId = _entityService.GetNewEntityId();
+
+        _player = new PlayerData();
+        _player.EntityId = entityId;
+        SetInitialPlayerValues(_player);
+        _Players.Add(_player);
+
+        var spawnMessage = new SpawnPlayerMessage();
+        spawnMessage.EntityId = entityId;
+        _messageRouter.RaiseMessage(spawnMessage);
+    }
+
+    private void SetInitialPlayerValues(PlayerData player)
+    {
+        player.GoldAmount = 0;
+    }
+
+    public int AddGold(int goldId, int playerId)
     {
         var goldService = ServiceFactory.Instance.GetService<GoldService>();
         var goldAmount = goldService.GetGoldAmount(goldId);
-        _player.GoldAmount += goldAmount;
+        for(int i=0; i < _Players.Count; i++)
+        {
+            if (_Players[i].EntityId == playerId)
+            {
+                _Players[i].GoldAmount += goldAmount;
+            }
+        }
         goldService.DestroyGold(goldId);
+        return goldAmount;
     }
-}
-
-public class Player
-{
-    public int GoldAmount { get; set; }
 }
