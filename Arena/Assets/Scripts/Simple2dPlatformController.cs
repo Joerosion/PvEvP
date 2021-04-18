@@ -4,6 +4,7 @@
 ///// 23/11/2014
 /////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Collections;
 /*  
  * This is a basic, but powerful barebones 2D platform controller for Unity
@@ -70,6 +71,8 @@ public class Simple2dPlatformController : MonoBehaviour
     public float ColliderOffsetVertical = 0.0f;
     public float ColliderOffsetHorizontal = 0.0f;
 
+    private bool isJumpDown;
+
     [Space(10)]
 
     // Deleteme
@@ -105,6 +108,7 @@ public class Simple2dPlatformController : MonoBehaviour
     private void OnEnable()
     {
         playerControls.Enable();
+        JumpButtonDetector();
     }
 
     private void OnDisable()
@@ -132,7 +136,7 @@ public class Simple2dPlatformController : MonoBehaviour
             verticalInput = playerControls.InGame.Vertical.ReadValue<float>();
         }
 
-        if(CanJump())
+        if (CanJump(isJumpDown))
         {
             //Drop down from a platform, using DOWN and Jump
             if (verticalInput < 0 && isGrounded && canDropThroughPlatforms)
@@ -220,7 +224,7 @@ public class Simple2dPlatformController : MonoBehaviour
                     Velocity.y += Gravity * Time.deltaTime * .3f; // This is using a temporary, hard-coded variable for wallSlide acceleration
                 }
             }
-            else if (Velocity.y > 0 && !InputSystem.GetDevice<Gamepad>().buttonSouth.isPressed) //Right now, we're checking the GamePad directly. This is not flexible. Let's change this at some point.
+            else if (Velocity.y > 0 && !isJumpDown) //Right now, we're checking the GamePad directly. This is not flexible. Let's change this at some point.
             {
                 Velocity += Vector3.up * Gravity * (LowJumpMultipler) * Time.deltaTime;
             }
@@ -242,11 +246,17 @@ public class Simple2dPlatformController : MonoBehaviour
         playerAnimationHandler.UpdateAnimatorValues(horizontalInput, Velocity.y, wallSliding, isGrounded);
     }
 
+    public void JumpButtonDetector()
+    {
+        playerControls.InGame.Jump.started += context => isJumpDown = true;
+        playerControls.InGame.Jump.canceled += context => isJumpDown = false;
+    }
+
     /// <summary>
     /// Smooth Jump Button detection
     /// </summary>
     /// <returns>Whether or not the jump button is pressed AND you can jump</returns>
-    private bool CanJump()
+    private bool CanJump(bool isJumpDown)
     {
         //Input.GetButtonDown tends to be quite 'sticky' and sometimes doesn't fire. 
         //This is a smoother way of doing things
@@ -254,14 +264,12 @@ public class Simple2dPlatformController : MonoBehaviour
         //Old Input System
         //var jumpButtonDown = Input.GetButton("Jump");
 
-        bool jumpButtonDown = playerControls.InGame.Jump.triggered;
-
         //If we have previously pressed the jump button and the jump button has been released
-        if (wasJumpPressed && !jumpButtonDown)
+        if (wasJumpPressed && !isJumpDown)
         {
             wasJumpPressed = false; //Re-enable jumping
         }
-        if (((isGrounded || wallSliding) || Time.time < timeLeftGround + jumpGracePeriod) && jumpButtonDown && !wasJumpPressed)
+        if (((isGrounded || wallSliding) || Time.time < timeLeftGround + jumpGracePeriod) && isJumpDown && !wasJumpPressed)
         {
             wasJumpPressed = true; //Disable jumping
             return true; //tell the parent that we've jumped
