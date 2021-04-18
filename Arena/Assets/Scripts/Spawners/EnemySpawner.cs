@@ -23,11 +23,11 @@ public class EnemySpawner : MonoBehaviour
     {
         if (message.EnemyType == EnemyType.Skeleton)
         {
-            Instantiate(_skeleton);
+            Instantiate(_skeleton, transform);
         }
         else if (message.EnemyType == EnemyType.MushroomMan)
         {
-            Instantiate(_mushroomMan);
+            Instantiate(_mushroomMan, transform);
         }
         else
         {

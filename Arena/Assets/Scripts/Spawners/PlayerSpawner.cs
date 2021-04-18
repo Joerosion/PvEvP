@@ -12,7 +12,7 @@ public class PlayerSpawner : MonoBehaviour
 
     private void OnSpawnPlayer(SpawnPlayerMessage message)
     {
-        var newGameObject = Instantiate(_playerPrefab);
+        var newGameObject = Instantiate(_playerPrefab, transform);
         newGameObject.GetComponent<PlayerInstance>().EntityId = message.EntityId;
     }
 }
