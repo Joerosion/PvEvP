@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 68665915}
   - component: {fileID: 68665916}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: HitBox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -59,7 +59,7 @@ GameObject:
   - component: {fileID: 7021750346403220673}
   - component: {fileID: 7021750346403220674}
   - component: {fileID: 7021750346403220672}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Skeleton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -207,7 +207,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7021750346527768341}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: MushroomMan
   m_TagString: Untagged
   m_Icon: {fileID: 0}

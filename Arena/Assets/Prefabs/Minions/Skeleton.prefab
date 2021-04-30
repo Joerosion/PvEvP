@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 68665915}
   - component: {fileID: 68665916}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: HitBox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -59,7 +59,8 @@ GameObject:
   - component: {fileID: 7021750346403220673}
   - component: {fileID: 7021750346403220674}
   - component: {fileID: 7021750346403220672}
-  m_Layer: 0
+  - component: {fileID: 4490087907179332671}
+  m_Layer: 10
   m_Name: Skeleton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -198,6 +199,22 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
+--- !u!114 &4490087907179332671
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7021750346403220796}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 97d8e77e5a478f54d9e325a47f9159b6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  EntityId: 0
+  health: 1
+  currentGold: 0
+  enemyType: 0
 --- !u!1 &7021750346527768342
 GameObject:
   m_ObjectHideFlags: 0
@@ -207,7 +224,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7021750346527768341}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Skeleton
   m_TagString: Untagged
   m_Icon: {fileID: 0}

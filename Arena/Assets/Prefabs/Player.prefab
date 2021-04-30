@@ -14,9 +14,9 @@ GameObject:
   - component: {fileID: 4889115990516294107}
   - component: {fileID: 4889115990516294100}
   - component: {fileID: 4889115990516294106}
-  - component: {fileID: 8349669694957128489}
+  - component: {fileID: -8182385894264744811}
   m_Layer: 8
-  m_Name: PlayerSprite
+  m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -193,7 +193,7 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 0.4677551, y: 0.5564859}
   m_EdgeRadius: 0
---- !u!114 &8349669694957128489
+--- !u!114 &-8182385894264744811
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -202,7 +202,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 4889115990516294096}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 97d8e77e5a478f54d9e325a47f9159b6, type: 3}
+  m_Script: {fileID: 11500000, guid: 4e3c344863cc6594ba8819f9848f9f54, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   EntityId: 0
@@ -211,4 +211,3 @@ MonoBehaviour:
   attackDamage: 0
   currentGold: 0
   currentRole: 0
-  _entityID: 0

@@ -18,7 +18,7 @@ using UnityEngine.InputSystem;
 
 public class Simple2dPlatformController : MonoBehaviour
 {
-    private bool wasJumpPressed;
+    private bool wasJumpDown;
     private bool canDropThroughPlatforms = true;
     private PlayerControls playerControls;
     private PlayerAnimationHandler playerAnimationHandler;
@@ -71,7 +71,7 @@ public class Simple2dPlatformController : MonoBehaviour
     public float ColliderOffsetVertical = 0.0f;
     public float ColliderOffsetHorizontal = 0.0f;
 
-    private bool isJumpDown;
+    public bool isJumpDown;
 
     [Space(10)]
 
@@ -258,24 +258,21 @@ public class Simple2dPlatformController : MonoBehaviour
     /// <returns>Whether or not the jump button is pressed AND you can jump</returns>
     private bool CanJump(bool isJumpDown)
     {
-        //Input.GetButtonDown tends to be quite 'sticky' and sometimes doesn't fire. 
-        //This is a smoother way of doing things
-
-        //Old Input System
-        //var jumpButtonDown = Input.GetButton("Jump");
-
         //If we have previously pressed the jump button and the jump button has been released
-        if (wasJumpPressed && !isJumpDown)
+        bool isJumpValid = false;
+
+        if(isJumpDown && !wasJumpDown)
         {
-            wasJumpPressed = false; //Re-enable jumping
-        }
-        if (((isGrounded || wallSliding) || Time.time < timeLeftGround + jumpGracePeriod) && isJumpDown && !wasJumpPressed)
-        {
-            wasJumpPressed = true; //Disable jumping
-            return true; //tell the parent that we've jumped
+            //Check to see if we're grounded, wall-sliding, or if we're within Coyote Time.
+            if ((isGrounded || wallSliding) || Time.time < timeLeftGround + jumpGracePeriod)
+            {
+                isJumpValid = true;
+            }
         }
 
-        return false; //Can't Jump, Won't Jump
+        wasJumpDown = isJumpDown; //Caching jump state for next frame
+
+        return isJumpValid;
 
     }
 
