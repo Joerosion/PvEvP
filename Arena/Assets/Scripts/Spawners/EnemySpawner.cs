@@ -25,31 +25,33 @@ public class EnemySpawner : MonoBehaviour
 
     private void OnSpawnEnemy(SpawnEnemyMessage message)
     {
+        GameObject newMinion;
+
         if (message.EnemyType == EnemyType.Skeleton)
         {
-            GameObject newMinion = Instantiate(_skeleton, transform);
-            _minions.Add(message.Id, newMinion);
+            newMinion = Instantiate(_skeleton, transform);
         }
         else if (message.EnemyType == EnemyType.MushroomMan)
         {
-            GameObject newMinion = Instantiate(_mushroomMan, transform);
-            _minions.Add(message.Id, newMinion);
+            newMinion = Instantiate(_mushroomMan, transform);
         }
         else
         {
             Debug.LogError("Enemy type not supported: " + message.EnemyType);
+            return;
         }
+
+        newMinion.GetComponent<EntityInstance>().EntityId = message.Id;
+        _minions.Add(message.Id, newMinion);
+
     }
 
     private void OnDestroyEnemy(DestroyEnemyMessage message)
     {
-        for (int i = 0; i < _minions.Count; i++)
+        if (_minions.ContainsKey(message.EntityId))
         {
-            if (_minions.ContainsKey(message.EntityId))
-            {
-                Destroy(_minions[i].gameObject);
-                _minions.Remove(message.EntityId);
-            }
+            Destroy(_minions[message.EntityId].gameObject);
+            _minions.Remove(message.EntityId);
         }
     }
 }

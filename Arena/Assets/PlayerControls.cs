@@ -41,6 +41,14 @@ public class @PlayerControls : IInputActionCollection, IDisposable
                     ""expectedControlType"": ""Axis"",
                     ""processors"": ""AxisDeadzone"",
                     ""interactions"": """"
+                },
+                {
+                    ""name"": ""Attack"",
+                    ""type"": ""Button"",
+                    ""id"": ""4cf9fdda-f307-429a-845a-a0cfa4e03321"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """"
                 }
             ],
             ""bindings"": [
@@ -197,6 +205,28 @@ public class @PlayerControls : IInputActionCollection, IDisposable
                     ""action"": ""Vertical"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""9606cbff-6415-496c-9f5d-346660ae95b7"",
+                    ""path"": ""<Keyboard>/f"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Attack"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""fd02610f-dc76-44a8-b99b-f7264d8cb4e5"",
+                    ""path"": ""<Gamepad>/buttonWest"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Attack"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -208,6 +238,7 @@ public class @PlayerControls : IInputActionCollection, IDisposable
         m_InGame_Horizontal = m_InGame.FindAction("Horizontal", throwIfNotFound: true);
         m_InGame_Jump = m_InGame.FindAction("Jump", throwIfNotFound: true);
         m_InGame_Vertical = m_InGame.FindAction("Vertical", throwIfNotFound: true);
+        m_InGame_Attack = m_InGame.FindAction("Attack", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -260,6 +291,7 @@ public class @PlayerControls : IInputActionCollection, IDisposable
     private readonly InputAction m_InGame_Horizontal;
     private readonly InputAction m_InGame_Jump;
     private readonly InputAction m_InGame_Vertical;
+    private readonly InputAction m_InGame_Attack;
     public struct InGameActions
     {
         private @PlayerControls m_Wrapper;
@@ -267,6 +299,7 @@ public class @PlayerControls : IInputActionCollection, IDisposable
         public InputAction @Horizontal => m_Wrapper.m_InGame_Horizontal;
         public InputAction @Jump => m_Wrapper.m_InGame_Jump;
         public InputAction @Vertical => m_Wrapper.m_InGame_Vertical;
+        public InputAction @Attack => m_Wrapper.m_InGame_Attack;
         public InputActionMap Get() { return m_Wrapper.m_InGame; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -285,6 +318,9 @@ public class @PlayerControls : IInputActionCollection, IDisposable
                 @Vertical.started -= m_Wrapper.m_InGameActionsCallbackInterface.OnVertical;
                 @Vertical.performed -= m_Wrapper.m_InGameActionsCallbackInterface.OnVertical;
                 @Vertical.canceled -= m_Wrapper.m_InGameActionsCallbackInterface.OnVertical;
+                @Attack.started -= m_Wrapper.m_InGameActionsCallbackInterface.OnAttack;
+                @Attack.performed -= m_Wrapper.m_InGameActionsCallbackInterface.OnAttack;
+                @Attack.canceled -= m_Wrapper.m_InGameActionsCallbackInterface.OnAttack;
             }
             m_Wrapper.m_InGameActionsCallbackInterface = instance;
             if (instance != null)
@@ -298,6 +334,9 @@ public class @PlayerControls : IInputActionCollection, IDisposable
                 @Vertical.started += instance.OnVertical;
                 @Vertical.performed += instance.OnVertical;
                 @Vertical.canceled += instance.OnVertical;
+                @Attack.started += instance.OnAttack;
+                @Attack.performed += instance.OnAttack;
+                @Attack.canceled += instance.OnAttack;
             }
         }
     }
@@ -307,5 +346,6 @@ public class @PlayerControls : IInputActionCollection, IDisposable
         void OnHorizontal(InputAction.CallbackContext context);
         void OnJump(InputAction.CallbackContext context);
         void OnVertical(InputAction.CallbackContext context);
+        void OnAttack(InputAction.CallbackContext context);
     }
 }

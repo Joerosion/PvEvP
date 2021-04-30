@@ -43,6 +43,11 @@ public class PlayerAnimationHandler : MonoBehaviour
         animator.SetTrigger("jumpTriggered");
     }
 
+    public void SetAttack(bool attacking)
+    {
+        animator.SetBool("attacking", attacking);
+    }
+
     public void UpdateAnimatorValues(float inputX, float velY, bool isWallSliding, bool isGrounded)
     {
         animator.SetFloat("Horizontal", Mathf.Abs(inputX));

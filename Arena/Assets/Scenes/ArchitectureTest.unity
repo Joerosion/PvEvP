@@ -152,9 +152,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 68e9b79fe04364782a0d49e5b2cf7286, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _skeleton: {fileID: 7021750346527768342, guid: 90d3076946104f2428fb2bf2fa66377b,
+  _skeleton: {fileID: 7269410873417186826, guid: 90d3076946104f2428fb2bf2fa66377b,
     type: 3}
-  _mushroomMan: {fileID: 7021750346527768342, guid: 36386aeaa33e94157b1a8aa3ad95e3e7,
+  _mushroomMan: {fileID: 2925739134032105780, guid: 36386aeaa33e94157b1a8aa3ad95e3e7,
     type: 3}
 --- !u!4 &17069098
 Transform:

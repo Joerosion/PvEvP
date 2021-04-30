@@ -64,6 +64,9 @@ public class Simple2dPlatformController : MonoBehaviour
     public float FallMultiplier = 2.5f;
     public float LowJumpMultipler = 2f;
     public float jumpGracePeriod = 0.2f;
+    public bool isAttacking;
+    public float timeOfLastAttack;
+    public float attackTime = 0.29f;
 
     [Header("Collider Specs")]
     public float ColliderSizeVertical = 0.3f;
@@ -108,7 +111,7 @@ public class Simple2dPlatformController : MonoBehaviour
     private void OnEnable()
     {
         playerControls.Enable();
-        JumpButtonDetector();
+        ControllerButtonDetectors();
     }
 
     private void OnDisable()
@@ -158,6 +161,21 @@ public class Simple2dPlatformController : MonoBehaviour
                     Debug.LogError("Starting wall jump");
                 }
             }
+        }
+
+        //Check to see if the player has hit attack / hasn't attacked recently / isn't wall sliding.
+        if(playerControls.InGame.Attack.triggered && !isAttacking && !wallSliding)
+        {
+            timeOfLastAttack = Time.time;
+            playerAnimationHandler.SetAttack(true);
+            isAttacking = true;
+        }
+
+        //Resets isAttacking after a set amount of time.
+        if(timeOfLastAttack + attackTime < Time.time)
+        {
+            playerAnimationHandler.SetAttack(false);
+            isAttacking = false;
         }
         
         //Simple Horizontal Movement (Same in the air as on the ground)
@@ -246,7 +264,7 @@ public class Simple2dPlatformController : MonoBehaviour
         playerAnimationHandler.UpdateAnimatorValues(horizontalInput, Velocity.y, wallSliding, isGrounded);
     }
 
-    public void JumpButtonDetector()
+    public void ControllerButtonDetectors()
     {
         playerControls.InGame.Jump.started += context => isJumpDown = true;
         playerControls.InGame.Jump.canceled += context => isJumpDown = false;
