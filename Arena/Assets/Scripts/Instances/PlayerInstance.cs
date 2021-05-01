@@ -46,13 +46,15 @@ public class PlayerInstance : EntityInstance
             //Create a temporary list, put all the colliders we touch with our swing in it. 
             List<Collider2D> tempHitList = new List<Collider2D>();
 
-            if(Physics2D.OverlapCollider(swingHitBox, eligibleTargets, tempHitList) > 0)
+            int numTargetsHit = Physics2D.OverlapCollider(swingHitBox, eligibleTargets, tempHitList);
+
+            if (numTargetsHit > 0)
             //if((swingHitBox.OverlapCollider(eligibleTargets, tempHitList) > 0))
             {
                 //Check all the colliders in tempHitList and see if the associated entity IDs exist in our list of entityIDs hit.
                 foreach (Collider2D col in tempHitList)
                 {
-                    int entityIdHit = col.transform.GetComponent<EntityData>().EntityId;
+                    int entityIdHit = col.gameObject.GetComponent<EntityInstance>().EntityId;
                     Debug.Log("We hit ID: " + entityIdHit);
 
                     //If the entity doesn't exist in our list, add it.
@@ -72,7 +74,6 @@ public class PlayerInstance : EntityInstance
         //A temporary printing out of the targets we hit, for debugging purposes.
         if(_entityIDsHit.Count > 0)
         {
-            Debug.Log("Printing out Ids: ");
             foreach (int Id in _entityIDsHit)
             {
                 Debug.Log("We hit: " + Id);

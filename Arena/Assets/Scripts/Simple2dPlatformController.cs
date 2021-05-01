@@ -171,16 +171,18 @@ public class Simple2dPlatformController : MonoBehaviour
             timeOfLastAttack = Time.time;
             playerAnimationHandler.SetAttack(true);
             isAttacking = true;
-            Debug.Log("Processing player attack.");
+        }
+
+        if(isAttacking == true)
+        {
             _playerInstance.processPlayerAttack();
         }
 
         //Resets isAttacking after a set amount of time.
-        if(isAttacking == true && timeOfLastAttack + attackTime < Time.time)
+        if (isAttacking == true && timeOfLastAttack + attackTime < Time.time)
         {
             playerAnimationHandler.SetAttack(false);
             isAttacking = false;
-            Debug.Log("Reporting player attack.");
             _playerInstance.reportPlayerAttack();
         }
         
