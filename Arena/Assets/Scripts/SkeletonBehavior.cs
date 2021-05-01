@@ -228,7 +228,6 @@ public class SkeletonBehavior : MonoBehaviour
             currentSpeed = 0;
             isWait = true;
             inMotion = false;
-            Debug.Log("Setting inMotion to FALSE");
             return;
         }
         else

@@ -25,6 +25,7 @@ public class Simple2dPlatformController : MonoBehaviour
     private bool jumpHeld;
     private float timeLeftGround;
     private float wallJumpDirection;
+    private PlayerInstance _playerInstance;
     float horizontalInput = 0f;
     float verticalInput = 0f;
     
@@ -106,6 +107,7 @@ public class Simple2dPlatformController : MonoBehaviour
     {
         playerControls = new PlayerControls();
         playerAnimationHandler = GetComponent<PlayerAnimationHandler>();
+        _playerInstance = GetComponent<PlayerInstance>();
     }
 
     private void OnEnable()
@@ -169,13 +171,17 @@ public class Simple2dPlatformController : MonoBehaviour
             timeOfLastAttack = Time.time;
             playerAnimationHandler.SetAttack(true);
             isAttacking = true;
+            Debug.Log("Processing player attack.");
+            _playerInstance.processPlayerAttack();
         }
 
         //Resets isAttacking after a set amount of time.
-        if(timeOfLastAttack + attackTime < Time.time)
+        if(isAttacking == true && timeOfLastAttack + attackTime < Time.time)
         {
             playerAnimationHandler.SetAttack(false);
             isAttacking = false;
+            Debug.Log("Reporting player attack.");
+            _playerInstance.reportPlayerAttack();
         }
         
         //Simple Horizontal Movement (Same in the air as on the ground)
