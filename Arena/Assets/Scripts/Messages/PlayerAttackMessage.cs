@@ -2,6 +2,6 @@ using System.Collections.Generic;
 public class PlayerAttackMessage
 {
     public int playerId { get; set; }
-    public List<int> enemyHitList = new List<int>();
+    public int minionIdHit { get; set; }
     public int Damage;
 }

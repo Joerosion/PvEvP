@@ -183,7 +183,7 @@ public class Simple2dPlatformController : MonoBehaviour
         {
             playerAnimationHandler.SetAttack(false);
             isAttacking = false;
-            _playerInstance.reportPlayerAttack();
+            _playerInstance.clearPlayerAttackList();
         }
         
         //Simple Horizontal Movement (Same in the air as on the ground)

@@ -64,19 +64,20 @@ public class MinionService
 
     private void OnPlayerAttack(PlayerAttackMessage message)
     {
+        //Create a copy of the active minion list
         List<MinionData> tempMinionList = _activeMinions;
 
-        for (int i=0; i < message.enemyHitList.Count; i++)
+        //Check each minion in this temp list to see if it matches the ID from the player
+        foreach(MinionData minion in tempMinionList)
         {
-            foreach(MinionData minion in tempMinionList)
+            if (minion.EntityId == message.minionIdHit)
             {
-                if (minion.EntityId == message.enemyHitList[i])
+                //Reduce the minion's HP by the damage value on the message.
+                minion.currentHP -= message.Damage;
+                if (minion.currentHP <= 0)
                 {
-                    minion.currentHP -= message.Damage;
-                    if(minion.currentHP <= 0)
-                    {
-                        DestroyMinion(minion.EntityId);
-                    }
+                    //If the minion is dead, destroy the minion with that ID.
+                    DestroyMinion(minion.EntityId);
                 }
             }
         }

@@ -49,49 +49,33 @@ public class PlayerInstance : EntityInstance
             int numTargetsHit = Physics2D.OverlapCollider(swingHitBox, eligibleTargets, tempHitList);
 
             if (numTargetsHit > 0)
-            //if((swingHitBox.OverlapCollider(eligibleTargets, tempHitList) > 0))
             {
-                //Check all the colliders in tempHitList and see if the associated entity IDs exist in our list of entityIDs hit.
                 foreach (Collider2D col in tempHitList)
                 {
                     int entityIdHit = col.gameObject.GetComponent<EntityInstance>().EntityId;
-                    Debug.Log("We hit ID: " + entityIdHit);
 
-                    //If the entity doesn't exist in our list, add it.
                     if (!_entityIDsHit.Contains(entityIdHit))
                     {
                         _entityIDsHit.Add(entityIdHit);
+                        reportPlayerAttackHit(EntityId, entityIdHit);
                     }
                 }
             }
 
-
         }
     }
 
-    public void reportPlayerAttack()
+    public void reportPlayerAttackHit(int playerId, int minionId)
     {
-        //A temporary printing out of the targets we hit, for debugging purposes.
-        if(_entityIDsHit.Count > 0)
-        {
-            foreach (int Id in _entityIDsHit)
-            {
-                Debug.Log("We hit: " + Id);
-            }
-        }
+        var message = new PlayerAttackMessage();
+        message.playerId = EntityId;
+        message.minionIdHit = minionId;
+        message.Damage = _playerDataService.GetPlayerDamage(EntityId);
+        _messageRouter.RaiseMessage(message);
+    }
 
-
-        //Report the list of IDs if not empty (be sure to include attacking player's ID as well).
-        if(_entityIDsHit.Count > 0)
-        {
-            var message = new PlayerAttackMessage();
-            message.playerId = EntityId;
-            message.enemyHitList = _entityIDsHit;
-            message.Damage = _playerDataService.GetPlayerDamage(EntityId);
-            _messageRouter.RaiseMessage(message);
-        }
-
-        //Empty the list
+    public void clearPlayerAttackList()
+    {
         _entityIDsHit.Clear();
     }
 
