@@ -1,4 +1,4 @@
-public class DestroyEnemyMessage
+public class DestroyMinionMessage
 {
     public int EntityId { get; set; }
 }

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 /// A Unity MonoBehaviour which listens for messages about which enemies
 /// to spawn and despawn.
 /// </summary>
-public class EnemySpawner : MonoBehaviour
+public class MinionSpawner : MonoBehaviour
 {
     private Dictionary<int, GameObject> _minions = new Dictionary<int, GameObject>();
 
@@ -19,25 +19,25 @@ public class EnemySpawner : MonoBehaviour
     private void Start()
     {
         var messageRouter = ServiceFactory.Instance.GetService<MessageRouter>();
-        messageRouter.AddListener<SpawnEnemyMessage>(OnSpawnEnemy);
-        messageRouter.AddListener<DestroyEnemyMessage>(OnDestroyEnemy);
+        messageRouter.AddListener<SpawnMinionMessage>(OnSpawnMinion);
+        messageRouter.AddListener<DestroyMinionMessage>(OnDestroyMinion);
     }
 
-    private void OnSpawnEnemy(SpawnEnemyMessage message)
+    private void OnSpawnMinion(SpawnMinionMessage message)
     {
         GameObject newMinion;
 
-        if (message.EnemyType == EnemyType.Skeleton)
+        if (message.MinionType == MinionType.Skeleton)
         {
             newMinion = Instantiate(_skeleton, transform);
         }
-        else if (message.EnemyType == EnemyType.MushroomMan)
+        else if (message.MinionType == MinionType.MushroomMan)
         {
             newMinion = Instantiate(_mushroomMan, transform);
         }
         else
         {
-            Debug.LogError("Enemy type not supported: " + message.EnemyType);
+            Debug.LogError("Minion type not supported: " + message.MinionType);
             return;
         }
 
@@ -46,7 +46,7 @@ public class EnemySpawner : MonoBehaviour
 
     }
 
-    private void OnDestroyEnemy(DestroyEnemyMessage message)
+    private void OnDestroyMinion(DestroyMinionMessage message)
     {
         if (_minions.ContainsKey(message.EntityId))
         {

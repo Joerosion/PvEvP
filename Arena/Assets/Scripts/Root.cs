@@ -23,7 +23,7 @@ public class Root : MonoBehaviour
     private void RegisterServices()
     {
         ServiceFactory.Instance.RegisterSingleton(new EntityService());
-        ServiceFactory.Instance.RegisterSingleton(new EnemyService());
+        ServiceFactory.Instance.RegisterSingleton(new MinionService());
         ServiceFactory.Instance.RegisterSingleton(new GoldService());
         ServiceFactory.Instance.RegisterSingleton(new PlayerDataService());
     }
@@ -33,8 +33,8 @@ public class Root : MonoBehaviour
         while (true)
         {
             yield return new WaitForSeconds(5.0f);
-            EnemyType enemyToSpawn = Random.value > 0.5f ? EnemyType.MushroomMan : EnemyType.Skeleton;
-            ServiceFactory.Instance.GetService<EnemyService>().SpawnEnemy(enemyToSpawn);
+            MinionType enemyToSpawn = Random.value > 0.5f ? MinionType.MushroomMan : MinionType.Skeleton;
+            ServiceFactory.Instance.GetService<MinionService>().SpawnMinion(enemyToSpawn);
         }
     }
 }

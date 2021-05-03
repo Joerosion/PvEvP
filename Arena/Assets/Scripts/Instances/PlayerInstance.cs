@@ -12,7 +12,7 @@ public class PlayerInstance : EntityInstance
     public ContactFilter2D eligibleTargets;
 
     private PlayerDataService _playerDataService;
-    private EnemyService _enemyService;
+    private MinionService _enemyService;
     private MessageRouter _messageRouter;
     private CapsuleCollider2D swingHitBox;
     private List<int> _entityIDsHit;
@@ -20,7 +20,7 @@ public class PlayerInstance : EntityInstance
     private void Start()
     {
         _playerDataService = ServiceFactory.Instance.GetService<PlayerDataService>();
-        _enemyService = ServiceFactory.Instance.GetService<EnemyService>();
+        _enemyService = ServiceFactory.Instance.GetService<MinionService>();
         _messageRouter = ServiceFactory.Instance.GetService<MessageRouter>();
         swingHitBox = GetComponent<CapsuleCollider2D>();
         _entityIDsHit = new List<int>();
@@ -87,6 +87,7 @@ public class PlayerInstance : EntityInstance
             var message = new PlayerAttackMessage();
             message.playerId = EntityId;
             message.enemyHitList = _entityIDsHit;
+            message.Damage = _playerDataService.GetPlayerDamage(EntityId);
             _messageRouter.RaiseMessage(message);
         }
 

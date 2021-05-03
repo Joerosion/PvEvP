@@ -1,4 +1,4 @@
-public enum EnemyType
+public enum MinionType
 {
     Skeleton = 0,
     MushroomMan = 1,
