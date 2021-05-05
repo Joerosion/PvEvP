@@ -48,14 +48,18 @@ public class PlayerInstance : EntityInstance
 
             int numTargetsHit = Physics2D.OverlapCollider(swingHitBox, eligibleTargets, tempHitList);
 
+            //Check to see that we've hit somethign at all
             if (numTargetsHit > 0)
             {
                 foreach (Collider2D col in tempHitList)
                 {
+                    //For each thing we've hit, get their EntityId
                     int entityIdHit = col.gameObject.GetComponent<EntityInstance>().EntityId;
 
+                    //Check our list of EntityIDs hit to make sure we haven't already sent this one.
                     if (!_entityIDsHit.Contains(entityIdHit))
                     {
+                        //If it's not in the list, add it to the list and then send it off.
                         _entityIDsHit.Add(entityIdHit);
                         reportPlayerAttackHit(EntityId, entityIdHit);
                     }

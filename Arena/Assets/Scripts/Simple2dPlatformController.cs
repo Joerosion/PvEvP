@@ -26,6 +26,7 @@ public class Simple2dPlatformController : MonoBehaviour
     private float timeLeftGround;
     private float wallJumpDirection;
     private PlayerInstance _playerInstance;
+    private CapsuleCollider2D _swingHitBox;
     float horizontalInput = 0f;
     float verticalInput = 0f;
     
@@ -108,6 +109,7 @@ public class Simple2dPlatformController : MonoBehaviour
         playerControls = new PlayerControls();
         playerAnimationHandler = GetComponent<PlayerAnimationHandler>();
         _playerInstance = GetComponent<PlayerInstance>();
+        _swingHitBox = GetComponent<CapsuleCollider2D>();
     }
 
     private void OnEnable()
@@ -165,20 +167,31 @@ public class Simple2dPlatformController : MonoBehaviour
             }
         }
 
-        //Check to see if the player has hit attack / hasn't attacked recently / isn't wall sliding.
-        if(playerControls.InGame.Attack.triggered && !isAttacking && !wallSliding)
+        if (!isAttacking && horizontalInput != 0)
+        {
+            //If we're moving in the opposite direction of our swinghitbox and we're not attacking, swap that shit.
+            if (Mathf.Sign(horizontalInput) != Mathf.Sign(_swingHitBox.offset.x))
+            {
+                _swingHitBox.offset = new Vector2(-_swingHitBox.offset.x, _swingHitBox.offset.y);
+            }
+
+        }
+
+        //Check to see if the player has hit attack / hasn't attacked recently / isn't wall sliding -- and start attack.
+        if (playerControls.InGame.Attack.triggered && !isAttacking && !wallSliding)
         {
             timeOfLastAttack = Time.time;
             playerAnimationHandler.SetAttack(true);
             isAttacking = true;
         }
 
+        //If we're attacking, process the attack.
         if(isAttacking == true)
         {
             _playerInstance.processPlayerAttack();
         }
 
-        //Resets isAttacking after a set amount of time.
+        //We've finished attacking. Reset isAttacking and clear the attack list.
         if (isAttacking == true && timeOfLastAttack + attackTime < Time.time)
         {
             playerAnimationHandler.SetAttack(false);
