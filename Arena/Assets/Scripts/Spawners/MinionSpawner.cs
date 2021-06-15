@@ -21,6 +21,7 @@ public class MinionSpawner : MonoBehaviour
         var messageRouter = ServiceFactory.Instance.GetService<MessageRouter>();
         messageRouter.AddListener<SpawnMinionMessage>(OnSpawnMinion);
         messageRouter.AddListener<DestroyMinionMessage>(OnDestroyMinion);
+        messageRouter.AddListener<UpdateHealthBarMessage>(OnUpdateHealthBar);
     }
 
     private void OnSpawnMinion(SpawnMinionMessage message)
@@ -45,6 +46,23 @@ public class MinionSpawner : MonoBehaviour
         _minions.Add(message.Id, newMinion);
 
     }
+
+    private void OnUpdateHealthBar(UpdateHealthBarMessage message)
+    {
+        //finds the current healthbar child of the minionID given in the message and sets it to the % difference of its new currentHP/maxHP
+        if (_minions.ContainsKey(message.EntityId))
+        {
+            Vector3 currentHealthBarScale = _minions[message.EntityId].transform.Find("Current Health Bar").transform.localScale;
+            Vector3 maxHealthBarScale = _minions[message.EntityId].transform.Find("Max Health Bar").transform.localScale;
+
+            float healthPercentage = (float)message.CurrentHealth / (float)message.MaxHealth;
+
+            Vector3 newHealthBarScale = new Vector3(maxHealthBarScale.x * healthPercentage, maxHealthBarScale.y, maxHealthBarScale.z);
+
+            _minions[message.EntityId].transform.Find("Current Health Bar").transform.localScale  = newHealthBarScale;
+        }
+    }
+
 
     private void OnDestroyMinion(DestroyMinionMessage message)
     {

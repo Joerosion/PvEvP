@@ -43,6 +43,24 @@ public class MinionService
         }
     }
 
+    public void UpdateHealthBar(int minionID)
+    {
+        for (int i = 0; i < _activeMinions.Count; ++i)
+        {
+            if (_activeMinions[i].EntityId == minionID)
+            {
+                //Finding the correct MinionData for the ID and assigning the currentHP of the data to the message
+                var message = new UpdateHealthBarMessage();
+                message.EntityId = _activeMinions[i].EntityId;
+                message.CurrentHealth = _activeMinions[i].currentHP;
+                message.MaxHealth = _activeMinions[i].maxHP;
+                _messageRouter.RaiseMessage(message);
+                break;
+            }
+        }
+    }
+
+
     public void RegisterMinion(int minionID, MinionType minionType)
     {
         MinionData newMinion = new MinionData();
@@ -50,7 +68,7 @@ public class MinionService
         newMinion.minionType = minionType;
         if (minionType == MinionType.Skeleton)
         {
-            newMinion.maxHP = 5;
+            newMinion.maxHP = 20;
         }
         else if (minionType == MinionType.MushroomMan)
         {
@@ -74,6 +92,8 @@ public class MinionService
             {
                 //Reduce the minion's HP by the damage value on the message.
                 minion.currentHP -= message.Damage;
+                //here I would send out an UpdateHealthBar message with the entity ID
+                UpdateHealthBar(minion.EntityId);
                 if (minion.currentHP <= 0)
                 {
                     //If the minion is dead, destroy the minion with that ID.
